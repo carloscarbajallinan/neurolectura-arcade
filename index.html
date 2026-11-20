@@ -1,0 +1,2821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroLectura Arcade | 30 Juegos de Entrenamiento Lector y Fonológico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800;900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            dyslexic: ['Lexend', 'Atkinson Hyperlegible', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            },
+            accent: {
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              purple: '#8b5cf6',
+              rose: '#f43f5e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Lexend', 'Atkinson Hyperlegible', sans-serif;
+      letter-spacing: 0.04em;
+      word-spacing: 0.12em;
+      line-height: 1.6;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .dyslexia-mode {
+      letter-spacing: 0.14em !important;
+      word-spacing: 0.25em !important;
+      line-height: 1.9 !important;
+    }
+    .char-b { color: #0284c7; font-weight: 800; }
+    .char-d { color: #d97706; font-weight: 800; }
+    .char-p { color: #8b5cf6; font-weight: 800; }
+    .char-q { color: #e11d48; font-weight: 800; }
+    .game-card:hover { transform: translateY(-4px); }
+    
+    @keyframes wavePulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .pulse-wave { animation: wavePulse 1.8s infinite ease-in-out; }
+
+    @keyframes bedThumbs {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(6px); }
+    }
+    .bed-anim-left { animation: bedThumbs 2s infinite ease-in-out; }
+    .bed-anim-right { animation: bedThumbs 2s infinite ease-in-out reverse; }
+
+    @keyframes trainRoll {
+      0% { transform: translateX(-15px); }
+      50% { transform: translateX(15px); }
+      100% { transform: translateX(-15px); }
+    }
+    .train-anim { animation: trainRoll 3s infinite ease-in-out; }
+
+    .flashlight-overlay {
+      background: radial-gradient(circle 95px at var(--x, 50%) var(--y, 50%), transparent 95px, rgba(15, 23, 42, 0.97) 140px);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+  <!-- BARRA DE NAVEGACIÓN SUPERIOR (LIMPIA, SIN SATURACIÓN) -->
+  <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700/80 sticky top-0 z-40 px-4 py-3 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo y Título -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="goHome()">
+        <div class="w-10 h-10 bg-gradient-to-tr from-brand-500 to-accent-purple rounded-xl flex items-center justify-center shadow text-white font-extrabold text-xl">
+          🚀
+        </div>
+        <div>
+          <h1 class="text-lg font-black tracking-wide text-white flex items-center gap-2">
+            NEUROLECTURA <span class="bg-brand-500 text-[10px] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Arcade 11</span>
+          </h1>
+          <p class="text-[11px] text-slate-400">Entrenamiento cognitivo multisensorial</p>
+        </div>
+      </div>
+
+      <!-- Controles de Dificultad, Estrellas y Rendimiento -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Selector Global de Dificultad -->
+        <div class="bg-slate-900/90 border border-slate-700 p-1 rounded-xl flex items-center gap-1 text-xs font-bold" title="Seleccionar nivel de dificultad">
+          <button onclick="setDifficulty('facil')" id="diffBtn_facil" class="diff-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white">
+            🟢 Fácil
+          </button>
+          <button onclick="setDifficulty('medio')" id="diffBtn_medio" class="diff-btn px-2.5 py-1 rounded-lg transition bg-brand-500 text-white shadow">
+            🟡 Medio
+          </button>
+          <button onclick="setDifficulty('dificil')" id="diffBtn_dificil" class="diff-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white">
+            🔴 Desafío
+          </button>
+        </div>
+
+        <!-- Estrellas y Medallas -->
+        <div class="hidden sm:flex items-center bg-slate-900/90 border border-slate-700 px-3 py-1.5 rounded-xl gap-2 text-sm">
+          <span class="text-amber-400 font-bold flex items-center gap-1">⭐ <span id="headerStars">0</span></span>
+          <span class="text-slate-600">|</span>
+          <span class="text-emerald-400 font-bold flex items-center gap-1">🎮 <span id="headerGamesCount">0/30</span></span>
+        </div>
+
+        <!-- Botón Accesibilidad Dislexia -->
+        <button id="toggleDyslexiaBtn" onclick="toggleDyslexiaMode()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200 transition" title="Espaciado amplio para dislexia">
+          🔤 <span class="hidden md:inline">Dislexia</span>
+        </button>
+
+        <!-- Botón Análisis de Rendimiento -->
+        <button onclick="openAnalyticsModal()" class="px-3 py-1.5 bg-gradient-to-r from-accent-purple to-brand-600 hover:from-purple-600 hover:to-brand-500 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5">
+          <span>📊</span> <span class="hidden sm:inline">Rendimiento</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col">
+
+    <!-- VISTA 1: MENÚ DE JUEGOS (DESPEJADO, SIN SATURACIÓN) -->
+    <section id="hubView" class="space-y-6">
+      
+      <!-- Banner Sencillo y Acogedor -->
+      <div class="bg-gradient-to-r from-slate-800 via-slate-850 to-slate-800 border border-slate-700/80 rounded-2xl p-5 sm:p-7 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="space-y-1 text-center sm:text-left">
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white">
+            ¡Hola explorador! ¿Qué habilidad entrenamos hoy?
+          </h2>
+          <p class="text-slate-300 text-xs sm:text-sm">
+            Nivel activo: <span id="currentDiffBadge" class="text-brand-400 font-bold uppercase">Medio (Aventurero)</span>. Cada juego cuenta con un <strong class="text-amber-300">Tutorial interactivo animado</strong> para aprender el secreto teórico antes de jugar.
+          </p>
+        </div>
+        <button onclick="playRandomGame()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-sm font-bold shadow-md transition whitespace-nowrap flex items-center gap-2">
+          <span>🎲</span> Modo Sorpresa
+        </button>
+      </div>
+
+      <!-- Filtro por Pilares (Pastillas Limpias) -->
+      <div class="flex items-center gap-2 overflow-x-auto py-1">
+        <button onclick="filterPillar('todos')" class="pillar-tab active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brand-500 text-white transition whitespace-nowrap" data-pillar="todos">
+          Todos (30)
+        </button>
+        <button onclick="filterPillar('pilar1')" class="pillar-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap" data-pillar="pilar1">
+          🎧 1. Auditivo & Rimas
+        </button>
+        <button onclick="filterPillar('pilar2')" class="pillar-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap" data-pillar="pilar2">
+          👁️ 2. Visual & b/d/p/q
+        </button>
+        <button onclick="filterPillar('pilar3')" class="pillar-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap" data-pillar="pilar3">
+          ⚡ 3. Sonido ⇄ Letra
+        </button>
+        <button onclick="filterPillar('pilar4')" class="pillar-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap" data-pillar="pilar4">
+          🧱 4. Sílabas & Memoria
+        </button>
+        <button onclick="filterPillar('pilar5')" class="pillar-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap" data-pillar="pilar5">
+          🎯 5. Rastreo & Crucigramas
+        </button>
+      </div>
+
+      <!-- Grid de Tarjetas de Juegos -->
+      <div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Renderizado dinámicamente -->
+      </div>
+
+    </section>
+
+    <!-- VISTA 2: ÁREA DE JUEGO ACTIVO (FOCALIZADA) -->
+    <section id="gamePlayView" class="hidden flex-grow flex flex-col">
+      
+      <!-- Barra del Juego: Volver, Título, Tutorial y Repetir Voz -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3 sm:p-4 mb-4 flex items-center justify-between flex-wrap gap-3 shadow-md">
+        
+        <div class="flex items-center gap-3">
+          <button onclick="goHome()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-bold transition text-xs flex items-center gap-1">
+            <span>⬅️</span> Menú
+          </button>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="currentGameBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">Juego #1</span>
+              <h3 id="currentGameTitle" class="text-base sm:text-lg font-black text-white">Nombre del Juego</h3>
+            </div>
+            <p id="currentGameObjective" class="text-xs text-slate-400">Objetivo cognitivo</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- BOTÓN CLAVE: TUTORIAL Y TEORÍA DINÁMICA -->
+          <button onclick="openTutorialModal()" class="px-3 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-xl text-xs transition flex items-center gap-1.5 shadow-md">
+            <span>💡</span> <span>Tutorial & Teoría</span>
+          </button>
+
+          <!-- Repetir voz -->
+          <button id="repeatAudioBtn" onclick="repeatCurrentInstruction()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1">
+            <span>🔊</span> <span class="hidden sm:inline">Repetir Voz</span>
+          </button>
+
+          <!-- Marcador de Puntos -->
+          <div class="bg-slate-900 px-3 py-2 rounded-xl border border-slate-700 text-xs font-bold text-amber-400 flex items-center gap-1">
+            <span>Puntos:</span>
+            <span id="currentGameScore">0</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Lienzo Limpio y Centrado del Juego -->
+      <div id="gameStage" class="flex-grow bg-slate-800/80 border border-slate-700 rounded-3xl p-6 sm:p-10 shadow-xl flex flex-col items-center justify-center relative overflow-hidden min-h-[480px]">
+        <!-- Inyección interactiva según juego y nivel -->
+      </div>
+
+      <!-- Barra de Mensajes y Orientación Amable -->
+      <div id="gameFeedbackBar" class="mt-4 p-3.5 rounded-2xl bg-slate-800 border border-slate-700 text-center font-bold text-sm transition-all duration-300">
+        💡 Escucha con atención o pulsa el botón del Tutorial si quieres repasar la teoría.
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL DE TUTORIAL INTERACTIVO Y ANIMADO -->
+  <div id="tutorialModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border-2 border-amber-500/50 max-w-xl w-full rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      
+      <div class="bg-slate-900 px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🎓</span>
+          <div>
+            <h3 class="text-base font-black text-white" id="tutModalTitle">Tutorial: ¿Cómo funciona este desafío?</h3>
+            <p class="text-xs text-amber-400 font-bold" id="tutModalSubtitle">Teoría sencilla con truco visual</p>
+          </div>
+        </div>
+        <button onclick="closeTutorialModal()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto max-h-[75vh]">
+        <div id="tutAnimationStage" class="bg-slate-950/80 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[170px] relative overflow-hidden">
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-sm font-extrabold text-white flex items-center gap-1.5">
+            <span>✨</span> El Secreto para Resolverlo:
+          </h4>
+          <p id="tutExplanationText" class="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/60">
+            Cargando tutorial...
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button onclick="narrateTutorial()" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-brand-300 rounded-xl text-xs font-bold transition flex items-center gap-2">
+            <span>🔊</span> Escuchar Explicación
+          </button>
+          <button onclick="closeTutorialModal()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-black shadow-lg transition">
+            ¡Entendido, a Jugar! 🚀
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL DE TELEMETRÍA Y REGISTRO CLÍNICO -->
+  <div id="analyticsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-slate-800 border border-slate-700 max-w-4xl w-full rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <div class="bg-slate-900 px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center text-lg font-bold">
+            📈
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white">Registro de Rendimiento y Telemetría Cognitiva</h3>
+            <p class="text-xs text-slate-400">Progreso, dificultades detectadas y tiempos de respuesta</p>
+          </div>
+        </div>
+        <button onclick="closeAnalyticsModal()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-5">
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-slate-900 border border-slate-700 p-3.5 rounded-2xl">
+            <div class="text-[11px] text-slate-400 font-semibold">Partidas Jugadas</div>
+            <div id="metricTotalSessions" class="text-2xl font-black text-brand-400 mt-1">0</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-700 p-3.5 rounded-2xl">
+            <div class="text-[11px] text-slate-400 font-semibold">Precisión Promedio</div>
+            <div id="metricAvgAccuracy" class="text-2xl font-black text-emerald-400 mt-1">0%</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-700 p-3.5 rounded-2xl">
+            <div class="text-[11px] text-slate-400 font-semibold">Tiempo Total</div>
+            <div id="metricTotalTime" class="text-2xl font-black text-amber-400 mt-1">0m</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-700 p-3.5 rounded-2xl">
+            <div class="text-[11px] text-slate-400 font-semibold">Estrellas</div>
+            <div id="metricTotalStars" class="text-2xl font-black text-purple-400 mt-1">0 ⭐</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-2xl space-y-3">
+          <h4 class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <span>🧭</span> Rendimiento por Pilar Cognitivo
+          </h4>
+          <div class="space-y-2.5" id="pillarProgressBars"></div>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-2xl space-y-2">
+          <h4 class="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <span>🔍</span> Patrones y Alertas de Refuerzo
+          </h4>
+          <div id="clinicalInsights" class="text-xs text-slate-300 leading-relaxed bg-slate-950/70 p-3.5 rounded-xl border border-slate-800">
+            Juega partidas para registrar fortalezas y áreas que requieren apoyo fonológico o espacial.
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <h4 class="font-extrabold text-white">Historial de Partidas</h4>
+            <span class="text-slate-400" id="sessionsCountLabel">0 registradas</span>
+          </div>
+          <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-x-auto max-h-44">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-800 text-slate-400 uppercase font-bold sticky top-0">
+                <tr>
+                  <th class="p-2">Fecha</th>
+                  <th class="p-2">Juego</th>
+                  <th class="p-2">Nivel</th>
+                  <th class="p-2">Aciertos</th>
+                  <th class="p-2">Precisión</th>
+                  <th class="p-2">Tiempo</th>
+                </tr>
+              </thead>
+              <tbody id="sessionsTableBody" class="divide-y divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="bg-slate-900 px-6 py-3.5 border-t border-slate-700 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button onclick="exportDataCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+            <span>📥</span> Descargar CSV (Excel)
+          </button>
+          <button onclick="exportDataJSON()" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            <span>📄</span> JSON
+          </button>
+          <button onclick="window.print()" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+            <span>🖨️</span> Imprimir Reporte
+          </button>
+        </div>
+        <button onclick="clearAnalyticsLog()" class="text-xs text-red-400 hover:text-red-300 hover:underline">
+          Reiniciar Bitácora
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL DE VICTORIA -->
+  <div id="victoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 border-2 border-amber-500/50 max-w-md w-full rounded-3xl p-6 sm:p-7 text-center space-y-4 shadow-2xl relative">
+      <div class="text-5xl animate-bounce">🏆</div>
+      <h3 class="text-xl font-black text-white">¡Misión Cumplida!</h3>
+      <p id="victoryMessage" class="text-xs sm:text-sm text-slate-300">
+        ¡Gran trabajo! Tus neuronas acaban de conectar nuevos caminos lectores.
+      </p>
+      <div class="bg-slate-900 border border-slate-700 p-3.5 rounded-2xl flex justify-around items-center">
+        <div>
+          <div class="text-[11px] text-slate-400">Puntaje</div>
+          <div id="victoryScore" class="text-xl font-extrabold text-amber-400">100</div>
+        </div>
+        <div class="w-px h-6 bg-slate-700"></div>
+        <div>
+          <div class="text-[11px] text-slate-400">Precisión</div>
+          <div id="victoryAccuracy" class="text-xl font-extrabold text-emerald-400">100%</div>
+        </div>
+        <div class="w-px h-6 bg-slate-700"></div>
+        <div>
+          <div class="text-[11px] text-slate-400">Estrellas</div>
+          <div class="text-xl font-extrabold text-yellow-300">⭐⭐⭐</div>
+        </div>
+      </div>
+      <div class="flex gap-2.5 pt-1">
+        <button onclick="replayCurrentGame()" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold text-xs text-white transition">
+          🔄 Repetir Ronda
+        </button>
+        <button onclick="playNextGame()" class="flex-1 py-2.5 bg-brand-500 hover:bg-brand-600 rounded-xl font-bold text-xs text-white shadow transition">
+          🚀 Siguiente Juego
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50 hidden"></canvas>
+
+  <script>
+    /* =====================================================================
+       0. UTILIDADES PROCEDURALES Y ESTADO DE DIFICULTAD
+       ===================================================================== */
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function pickRandom(arr, count) {
+      return shuffle(arr).slice(0, count);
+    }
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    let currentDifficulty = localStorage.getItem('neurolectura_diff') || 'medio';
+
+    function setDifficulty(lvl) {
+      currentDifficulty = lvl;
+      localStorage.setItem('neurolectura_diff', lvl);
+      
+      const names = { facil: 'Fácil (Novato)', medio: 'Medio (Aventurero)', dificil: 'Difícil (Maestro)' };
+      const badge = document.getElementById('currentDiffBadge');
+      if (badge) badge.textContent = names[lvl];
+
+      ['facil', 'medio', 'dificil'].forEach(k => {
+        const btn = document.getElementById(`diffBtn_${k}`);
+        if (!btn) return;
+        if (k === lvl) {
+          btn.className = 'diff-btn px-2.5 py-1 rounded-lg transition bg-brand-500 text-white shadow font-bold';
+        } else {
+          btn.className = 'diff-btn px-2.5 py-1 rounded-lg transition text-slate-400 hover:text-white font-bold';
+        }
+      });
+
+      if (currentActiveGame && currentGameInstance) {
+        launchGame(currentActiveGame.id);
+      }
+    }
+
+    /* =====================================================================
+       1. SISTEMA DE AUDIO PROCEDURAL Y VOZ (SPEECH SYNTHESIS)
+       ===================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.synth = window.speechSynthesis;
+        this.selectedVoice = null;
+        this.initVoice();
+      }
+
+      initContext() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      initVoice() {
+        if (!this.synth) return;
+        const load = () => {
+          const voices = this.synth.getVoices();
+          this.selectedVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Sabina') || v.name.includes('Helena') || v.name.includes('Alvaro') || v.name.includes('Pablo'))) ||
+                              voices.find(v => v.lang.startsWith('es')) || null;
+        };
+        load();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+          speechSynthesis.onvoiceschanged = load;
+        }
+      }
+
+      speak(text, rate = 0.9, pitch = 1.0) {
+        if (!this.synth) return;
+        this.synth.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        if (this.selectedVoice) utter.voice = this.selectedVoice;
+        utter.lang = 'es-ES';
+        utter.rate = rate;
+        utter.pitch = pitch;
+        this.synth.speak(utter);
+      }
+
+      playSuccessTone() {
+        this.initContext();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.35);
+        });
+      }
+
+      playGentleRetryTone() {
+        this.initContext();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(329.63, now);
+        osc.frequency.exponentialRampToValueAtTime(261.63, now + 0.25);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+
+      playVictoryFanfare() {
+        this.initContext();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const melody = [
+          { f: 523.25, d: 0.15 }, { f: 659.25, d: 0.15 }, { f: 783.99, d: 0.15 },
+          { f: 1046.50, d: 0.4 }
+        ];
+        let offset = 0;
+        melody.forEach(item => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(item.f, now + offset);
+          gain.gain.setValueAtTime(0.2, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + offset + item.d);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + offset);
+          osc.stop(now + offset + item.d);
+          offset += item.d * 0.85;
+        });
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    /* =====================================================================
+       2. MOTOR DE TELEMETRÍA Y ANALÍTICA
+       ===================================================================== */
+    class AnalyticsEngine {
+      constructor() {
+        this.storageKey = 'neurolectura_telemetry_logs_v1';
+        this.starsKey = 'neurolectura_stars_total';
+        this.logs = this.loadLogs();
+        this.totalStars = parseInt(localStorage.getItem(this.starsKey) || '0', 10);
+      }
+
+      loadLogs() {
+        try {
+          const data = localStorage.getItem(this.storageKey);
+          return data ? JSON.parse(data) : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      saveLogs() {
+        try {
+          localStorage.setItem(this.storageKey, JSON.stringify(this.logs));
+          localStorage.setItem(this.starsKey, this.totalStars.toString());
+        } catch (e) {}
+      }
+
+      recordSession(sessionData) {
+        const entry = {
+          id: 'ses_' + Date.now(),
+          timestamp: new Date().toISOString(),
+          formattedDate: new Date().toLocaleDateString('es-ES') + ' ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+          gameId: sessionData.gameId,
+          gameName: sessionData.gameName,
+          pillarId: sessionData.pillarId,
+          pillarName: sessionData.pillarName,
+          difficulty: currentDifficulty,
+          score: sessionData.score,
+          correctAnswers: sessionData.correctAnswers,
+          totalAttempts: sessionData.totalAttempts,
+          accuracy: sessionData.totalAttempts > 0 ? Math.round((sessionData.correctAnswers / sessionData.totalAttempts) * 100) : 100,
+          durationSeconds: sessionData.durationSeconds,
+          specificErrors: sessionData.specificErrors || []
+        };
+
+        this.logs.unshift(entry);
+        if (this.logs.length > 500) this.logs.pop();
+
+        let earnedStars = 1;
+        if (entry.accuracy >= 80) earnedStars = 3;
+        else if (entry.accuracy >= 50) earnedStars = 2;
+        this.totalStars += earnedStars;
+
+        this.saveLogs();
+        this.syncWithDesktopServer(entry);
+        return entry;
+      }
+
+      async syncWithDesktopServer(entry) {
+        try {
+          if (window.location.protocol.startsWith('http')) {
+            await fetch('/api/save_log', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(entry)
+            });
+          }
+        } catch (e) {}
+      }
+
+      getSummary() {
+        const totalSessions = this.logs.length;
+        if (totalSessions === 0) {
+          return {
+            totalSessions: 0,
+            avgAccuracy: 0,
+            totalTimeMin: 0,
+            totalStars: this.totalStars,
+            completedGamesSet: new Set(),
+            pillarAverages: {}
+          };
+        }
+
+        const sumAcc = this.logs.reduce((acc, l) => acc + l.accuracy, 0);
+        const sumSec = this.logs.reduce((acc, l) => acc + l.durationSeconds, 0);
+        const completedGamesSet = new Set(this.logs.map(l => l.gameId));
+
+        const pillars = ['pilar1', 'pilar2', 'pilar3', 'pilar4', 'pilar5'];
+        const pillarAverages = {};
+        pillars.forEach(p => {
+          const pLogs = this.logs.filter(l => l.pillarId === p);
+          if (pLogs.length > 0) {
+            const acc = Math.round(pLogs.reduce((a, b) => a + b.accuracy, 0) / pLogs.length);
+            pillarAverages[p] = { count: pLogs.length, accuracy: acc };
+          } else {
+            pillarAverages[p] = { count: 0, accuracy: 0 };
+          }
+        });
+
+        return {
+          totalSessions,
+          avgAccuracy: Math.round(sumAcc / totalSessions),
+          totalTimeMin: Math.round(sumSec / 60),
+          totalStars: this.totalStars,
+          completedGamesSet,
+          pillarAverages
+        };
+      }
+
+      clearAll() {
+        this.logs = [];
+        this.totalStars = 0;
+        this.saveLogs();
+      }
+    }
+
+    const analytics = new AnalyticsEngine();
+
+    /* =====================================================================
+       3. BANCOS DE CONTENIDO MULTINIVEL CON TRAMPAS Y PSEUDO-RIMAS
+       ===================================================================== */
+    const CONTENT_POOLS = {
+      rhymesByDiff: {
+        facil: [
+          { w1: 'GATO', w2: 'PATO', rhymes: true, reason: 'Terminan con la misma música: -ATO' },
+          { w1: 'SOL', w2: 'CARACOL', rhymes: true, reason: 'Terminan en -OL' },
+          { w1: 'PERRO', w2: 'LÁPIZ', rhymes: false, reason: 'Sonidos totalmente diferentes' },
+          { w1: 'CUNA', w2: 'LUNA', rhymes: true, reason: 'Terminan en -UNA' },
+          { w1: 'CASA', w2: 'ÁRBOL', rhymes: false, reason: 'No tienen música parecida' }
+        ],
+        medio: [
+          { w1: 'CAMPANA', w2: 'MANZANA', rhymes: true, reason: 'Terminan en -ANA' },
+          { w1: 'RATÓN', w2: 'BOTÓN', rhymes: true, reason: 'Terminan en -ÓN' },
+          { w1: 'VENTANA', w2: 'RANA', rhymes: true, reason: 'Terminan en -ANA' },
+          { w1: 'LIBRO', w2: 'CASA', rhymes: false, reason: 'No riman' },
+          { w1: 'FUEGO', w2: 'JUEGO', rhymes: true, reason: 'Terminan en -UEGO' },
+          { w1: 'PIEDRA', w2: 'AVIÓN', rhymes: false, reason: 'No riman' }
+        ],
+        dificil: [
+          { w1: 'MESA', w2: 'META', rhymes: false, reason: '¡Trampa! Se parecen pero una tiene S y otra T' },
+          { w1: 'BOTE', w2: 'BOTA', rhymes: false, reason: '¡Trampa! Cambia la vocal final (E vs A)' },
+          { w1: 'PELO', w2: 'PERRO', rhymes: false, reason: '¡Trampa! L no suena igual que RR' },
+          { w1: 'QUESO', w2: 'HUESO', rhymes: true, reason: 'Terminan en -ESO' },
+          { w1: 'CORAZÓN', w2: 'MELÓN', rhymes: true, reason: 'Terminan en -ÓN' },
+          { w1: 'SAPO', w2: 'SOPA', rhymes: false, reason: '¡Trampa! Letras cambiadas de orden' }
+        ]
+      },
+
+      initialSounds: [
+        { word: 'GATO', letter: 'G', distractors: ['M', 'P', 'T'] },
+        { word: 'SOL', letter: 'S', distractors: ['R', 'T', 'Z'] },
+        { word: 'MESA', letter: 'M', distractors: ['N', 'L', 'P'] },
+        { word: 'LUNA', letter: 'L', distractors: ['P', 'D', 'R'] },
+        { word: 'PATO', letter: 'P', distractors: ['T', 'B', 'D'] },
+        { word: 'BARCO', letter: 'B', distractors: ['D', 'P', 'V'] },
+        { word: 'DADO', letter: 'D', distractors: ['B', 'T', 'P'] },
+        { word: 'TAZA', letter: 'T', distractors: ['F', 'S', 'D'] },
+        { word: 'FOCA', letter: 'F', distractors: ['S', 'P', 'B'] },
+        { word: 'RATÓN', letter: 'R', distractors: ['L', 'M', 'N'] },
+        { word: 'SAPO', letter: 'S', distractors: ['C', 'Z', 'T'] },
+        { word: 'LEÓN', letter: 'L', distractors: ['R', 'N', 'M'] }
+      ],
+
+      syllableCounts: [
+        { word: 'PAN', count: 1, split: 'PAN' },
+        { word: 'SOL', count: 1, split: 'SOL' },
+        { word: 'CA-SA', count: 2, split: 'CA-SA' },
+        { word: 'GA-TO', count: 2, split: 'GA-TO' },
+        { word: 'PLÁ-TA-NO', count: 3, split: 'PLÁ-TA-NO' },
+        { word: 'TO-MA-TE', count: 3, split: 'TO-MA-TE' },
+        { word: 'PE-LO-TA', count: 3, split: 'PE-LO-TA' },
+        { word: 'MA-RI-PO-SA', count: 4, split: 'MA-RI-PO-SA' },
+        { word: 'CHO-CO-LA-TE', count: 4, split: 'CHO-CO-LA-TE' }
+      ],
+
+      omissions: [
+        { full: 'PATO', remove: '/p/', left: 'ATO', options: ['ATO', 'PATO', 'TATO'] },
+        { full: 'BOLA', remove: '/b/', left: 'OLA', options: ['COLA', 'OLA', 'SOLA'] },
+        { full: 'CAMA', remove: '/c/', left: 'AMA', options: ['RAMA', 'AMA', 'MAMA'] },
+        { full: 'ROSA', remove: '/r/', left: 'OSA', options: ['COSA', 'OSA', 'SOPA'] },
+        { full: 'PALA', remove: '/p/', left: 'ALA', options: ['ALA', 'MALA', 'SALA'] },
+        { full: 'FOCO', remove: '/f/', left: 'OCO', options: ['POCO', 'OCO', 'TOCO'] }
+      ],
+
+      cvcWords: [
+        { phonemes: 'S - O - L', word: 'SOL', icon: '☀️' },
+        { phonemes: 'P - A - N', word: 'PAN', icon: '🥖' },
+        { phonemes: 'M - A - R', word: 'MAR', icon: '🌊' },
+        { phonemes: 'O - J - O', word: 'OJO', icon: '👁️' },
+        { phonemes: 'L - U - Z', word: 'LUZ', icon: '💡' },
+        { phonemes: 'P - E - Z', word: 'PEZ', icon: '🐟' },
+        { phonemes: 'S - A - L', word: 'SAL', icon: '🧂' },
+        { phonemes: 'R - E - D', word: 'RED', icon: '🕸️' }
+      ],
+
+      syllableTowerWords: [
+        { word: 'GATO', syls: ['GA', 'TO'], icon: '🐱' },
+        { word: 'PERRO', syls: ['PE', 'RRO'], icon: '🐶' },
+        { word: 'CASA', syls: ['CA', 'SA'], icon: '🏠' },
+        { word: 'LUNA', syls: ['LU', 'NA'], icon: '🌙' },
+        { word: 'BOLA', syls: ['BO', 'LA'], icon: '⚽' },
+        { word: 'MESA', syls: ['ME', 'SA'], icon: '🪵' },
+        { word: 'PELOTA', syls: ['PE', 'LO', 'TA'], icon: '🏀' },
+        { word: 'TOMATE', syls: ['TO', 'MA', 'TE'], icon: '🍅' },
+        { word: 'MALETA', syls: ['MA', 'LE', 'TA'], icon: '🧳' }
+      ],
+
+      brokenBridge: [
+        { display: '_OTA', correct: 'B', options: ['B', 'D'], word: 'BOTA', icon: '🥾' },
+        { display: '_ADO', correct: 'D', options: ['B', 'D'], word: 'DADO', icon: '🎲' },
+        { display: '_OLA', correct: 'B', options: ['B', 'D'], word: 'BOLA', icon: '⚽' },
+        { display: '_EDO', correct: 'D', options: ['B', 'D'], word: 'DEDO', icon: '☝️' },
+        { display: '_UESO', correct: 'Q', options: ['P', 'Q'], word: 'QUESO', icon: '🧀' },
+        { display: '_ATO', correct: 'P', options: ['P', 'Q'], word: 'PATO', icon: '🦆' },
+        { display: 'S_L', correct: 'O', options: ['O', 'A'], word: 'SOL', icon: '☀️' },
+        { display: 'P_N', correct: 'A', options: ['A', 'U'], word: 'PAN', icon: '🥖' }
+      ],
+
+      crosswordWords: [
+        'SOL', 'PAN', 'MAR', 'SAL', 'LUZ', 'PEZ', 'OJO', 'RED', 'SUR',
+        'CASA', 'LUNA', 'GATO', 'SAPO', 'MESA', 'TAZA', 'BOLA', 'DADO'
+      ],
+
+      raceTrackWords: [
+        'MAPA', 'SAPO', 'LUNA', 'DADO', 'BOLA', 'PELO', 'RUTA', 'MESA', 'LOMA',
+        'PUMA', 'RANA', 'VELA', 'NUBE', 'FARO', 'SOPA', 'TAZA', 'PATO'
+      ],
+
+      masterQuests: [
+        { q: '¿Con qué letra empieza OSO?', ans: 'O', opts: ['O', 'A', 'E'] },
+        { q: '¿Cuál es la letra con barriga hacia adelante?', ans: 'b', opts: ['b', 'd'] },
+        { q: '¿Qué letra tiene la espalda redonda mirando atrás?', ans: 'd', opts: ['b', 'd'] },
+        { q: '¿Qué sonido hace la letra S?', ans: 'sss', opts: ['sss', 'mmm', 'ppp'] },
+        { q: '¿Cuál de estas letras tiene la cola hacia abajo a la izquierda?', ans: 'p', opts: ['p', 'q', 'b'] },
+        { q: 'Si a BOLA le quitamos la /b/, ¿qué palabra queda?', ans: 'OLA', opts: ['OLA', 'BOLA', 'SOLA'] },
+        { q: '¿Cuántas sílabas tiene la palabra TO-MA-TE?', ans: '3', opts: ['2', '3', '4'] },
+        { q: '¿Qué palabra rima con MANZANA?', ans: 'CAMPANA', opts: ['CAMPANA', 'PERRO', 'SOL'] },
+        { q: '¿Con qué vocal se escribe SOL?', ans: 'O', opts: ['A', 'O', 'U'] },
+        { q: 'Junta los sonidos: /p/ - /a/ - /n/. ¿Qué palabra se forma?', ans: 'PAN', opts: ['PAN', 'PIN', 'PAZ'] }
+      ]
+    };
+
+    /* =====================================================================
+       4. SISTEMA DE TUTORIALES ANIMADOS Y TEORÍA VISUAL
+       ===================================================================== */
+    const TUTORIAL_DATA = {
+      pilar1: {
+        title: 'Pilar 1: El Eco y los Sonidos del Habla',
+        subtitle: 'Cómo descubrir los sonidos antes de leer letras',
+        text: 'Las palabras habladas tienen música. Dos palabras RIMAN cuando su final suena exactamente igual (ej: man-ZANA y cam-PANA). ¡Cuidado con las trampas! Palabras como MESA y META se parecen pero NO riman porque la S y la T hacen sonidos distintos.',
+        animHtml: `
+          <div class="flex items-center justify-center gap-6">
+            <div class="text-center p-3 bg-slate-900 border border-slate-700 rounded-xl">
+              <span class="text-2xl font-black text-white">cam-<span class="text-amber-400 underline font-black">PANA</span></span>
+            </div>
+            <div class="text-3xl font-black text-emerald-400 pulse-wave">🎶 = 🎶</div>
+            <div class="text-center p-3 bg-slate-900 border border-slate-700 rounded-xl">
+              <span class="text-2xl font-black text-white">man-<span class="text-amber-400 underline font-black">ZANA</span></span>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-3 text-center">¡El final tiene la misma melodía!</p>
+        `
+      },
+      pilar2: {
+        title: 'Pilar 2: El Desafío de las Letras Espejo (b, d, p, q)',
+        subtitle: 'El truco infalible de las dos manos (👍 cama)',
+        text: 'Para no confundir la b y la d, usa tus dos manos como brújula. Cierra tus puños y levanta los pulgares: tu mano IZQUIERDA forma la letra b (con la barriguita hacia adelante). Tu mano DERECHA forma la d (con la espalda). Juntas forman la palabra CAMA (b-e-d).',
+        animHtml: `
+          <div class="flex items-center justify-center gap-8 py-2">
+            <div class="flex flex-col items-center bed-anim-left">
+              <span class="text-5xl">👍</span>
+              <span class="text-3xl font-black text-blue-400 mt-1">b</span>
+              <span class="text-[10px] text-slate-400 font-bold">Mano Izquierda (Barriguita)</span>
+            </div>
+            <span class="text-xl text-slate-600 font-bold">VS</span>
+            <div class="flex flex-col items-center bed-anim-right">
+              <span class="text-5xl scale-x-[-1]">👍</span>
+              <span class="text-3xl font-black text-amber-400 mt-1">d</span>
+              <span class="text-[10px] text-slate-400 font-bold">Mano Derecha (Espalda)</span>
+            </div>
+          </div>
+        `
+      },
+      pilar3: {
+        title: 'Pilar 3: El Nombre vs El Sonido de la Letra',
+        subtitle: 'El puente mágico entre ver y escuchar',
+        text: 'Las letras tienen nombre, pero cuando leemos usamos su SONIDO puro. La letra M no se lee diciendo "eme", sino haciendo /mmmm/ como cuando algo te gusta. ¡Aprende a escuchar el sonido, no su nombre!',
+        animHtml: `
+          <div class="flex items-center justify-center gap-4 py-3">
+            <div class="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg">
+              M
+            </div>
+            <span class="text-2xl text-slate-400 font-bold">➔</span>
+            <div class="bg-slate-900 border border-slate-700 px-5 py-3 rounded-2xl flex items-center gap-2">
+              <span class="text-3xl">🗣️</span>
+              <span class="text-2xl font-black text-amber-400 tracking-widest pulse-wave">/ m m m m /</span>
+            </div>
+          </div>
+        `
+      },
+      pilar4: {
+        title: 'Pilar 4: Ensamblar Sílabas y Palabras',
+        subtitle: 'Los ladrillos de Lego del lenguaje',
+        text: 'Las palabras se construyen como torres de bloques. Cada sílaba es un golpe de voz que une una consonante con una vocal (ej: M + A = MA). Si juntas MA + PA, ¡creas MAPA!',
+        animHtml: `
+          <div class="flex items-center justify-center gap-3 py-2">
+            <div class="bg-blue-600 px-4 py-3 rounded-xl text-2xl font-black text-white shadow">
+              🚂 M
+            </div>
+            <span class="text-xl text-slate-500 font-bold">+</span>
+            <div class="bg-amber-600 px-4 py-3 rounded-xl text-2xl font-black text-white shadow">
+              🚃 A
+            </div>
+            <span class="text-xl text-slate-500 font-bold">=</span>
+            <div class="bg-emerald-600 px-5 py-3 rounded-xl text-2xl font-black text-white shadow font-mono">
+              MA
+            </div>
+          </div>
+        `
+      },
+      pilar5: {
+        title: 'Pilar 5: Rastreo Visual y Crucigramas',
+        subtitle: 'El tren que viaja de izquierda a derecha',
+        text: 'Para leer sin cansarte ni saltarte letras, entrena tus ojos para viajar siempre en línea recta de izquierda a derecha. En los crucigramas y sopas, busca primero la letra inicial y sigue la línea sin desviar la mirada.',
+        animHtml: `
+          <div class="w-full flex items-center justify-center gap-2 py-3 overflow-hidden">
+            <div class="train-anim flex items-center gap-2 bg-slate-900 border border-slate-700 px-6 py-3 rounded-2xl">
+              <span class="text-3xl">🏎️</span>
+              <span class="text-2xl font-black text-white tracking-widest">S ➔ O ➔ L</span>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    function openTutorialModal() {
+      if (!currentActiveGame) return;
+      const pilarKey = currentActiveGame.pillar;
+      const tut = TUTORIAL_DATA[pilarKey] || TUTORIAL_DATA.pilar1;
+
+      document.getElementById('tutModalTitle').textContent = `Tutorial: ${currentActiveGame.title}`;
+      document.getElementById('tutModalSubtitle').textContent = tut.subtitle;
+      document.getElementById('tutExplanationText').textContent = tut.text;
+      document.getElementById('tutAnimationStage').innerHTML = tut.animHtml;
+
+      document.getElementById('tutorialModal').classList.remove('hidden');
+    }
+
+    function closeTutorialModal() {
+      document.getElementById('tutorialModal').classList.add('hidden');
+    }
+
+    function narrateTutorial() {
+      const txt = document.getElementById('tutExplanationText').textContent;
+      sound.speak(txt, 0.85);
+    }
+
+    /* =====================================================================
+       5. CATÁLOGO MAESTRO DE LOS 30 JUEGOS
+       ===================================================================== */
+    const GAMES_CATALOG = [
+      { id: 1, pillar: 'pilar1', pillarName: 'Auditivo', title: 'Cazador de Sonidos Iniciales', icon: '👂', obj: 'Aislar el primer fonema en palabras habladas' },
+      { id: 2, pillar: 'pilar1', pillarName: 'Auditivo', title: 'El Eco de las Rimas', icon: '🔔', obj: 'Discriminación de rimas y detección de trampas' },
+      { id: 3, pillar: 'pilar1', pillarName: 'Auditivo', title: 'Contador de Golpes de Sílaba', icon: '🥁', obj: 'Segmentación rítmica y conteo con tambor' },
+      { id: 4, pillar: 'pilar1', pillarName: 'Auditivo', title: '¿Quién se Escapó? (Omisión)', icon: '🕵️', obj: 'Manipulación mental al quitar el fonema inicial' },
+      { id: 5, pillar: 'pilar1', pillarName: 'Auditivo', title: 'Fusión de Sonidos Mágicos', icon: '✨', obj: 'Síntesis de fonemas aislados (/s/-/o/-/l/)' },
+      { id: 6, pillar: 'pilar1', pillarName: 'Auditivo', title: 'El Sonido Espía', icon: '📍', obj: 'Identificar si el fonema está al inicio, centro o final' },
+
+      { id: 7, pillar: 'pilar2', pillarName: 'Visual', title: 'El Desafío Espejo (b vs d)', icon: '🪞', obj: 'Diferenciar orientación de b (barriga) y d (espalda)' },
+      { id: 8, pillar: 'pilar2', pillarName: 'Visual', title: 'El Cuarteto Rebelde (b, d, p, q)', icon: '🎯', obj: 'Identificación rápida entre letras simétricas' },
+      { id: 9, pillar: 'pilar2', pillarName: 'Visual', title: 'El Impostor Rotado (M/W, n/u)', icon: '🔄', obj: 'Orientación vertical y detección de inversiones' },
+      { id: 10, pillar: 'pilar2', pillarName: 'Visual', title: 'Siluetas y Sombras de Letras', icon: '👥', obj: 'Fijación de contorno y rasgos visuales distintivos' },
+      { id: 11, pillar: 'pilar2', pillarName: 'Visual', title: 'Laberinto de la Letra Fiel', icon: '🧩', obj: 'Rastreo secuencial guiado por una letra clave' },
+      { id: 12, pillar: 'pilar2', pillarName: 'Visual', title: 'Memorama de Letras Gemelas', icon: '🃏', obj: 'Asociación de mayúsculas con sus minúsculas' },
+
+      { id: 13, pillar: 'pilar3', pillarName: 'Grafema-Fonema', title: 'La Tecla Parlante', icon: '🎹', obj: 'Conexión visual-auditiva del fonema puro' },
+      { id: 14, pillar: 'pilar3', pillarName: 'Grafema-Fonema', title: 'Diana de Fonemas', icon: '🏹', obj: 'Escuchar el sonido y disparar a la letra diana' },
+      { id: 15, pillar: 'pilar3', pillarName: 'Grafema-Fonema', title: 'Cofre del Tesoro Vocálico', icon: '💎', obj: 'Clasificación de palabras por su núcleo vocálico' },
+      { id: 16, pillar: 'pilar3', pillarName: 'Grafema-Fonema', title: 'La Ruleta de Consonantes', icon: '🎡', obj: 'Girar y vincular consonante con imagen' },
+      { id: 17, pillar: 'pilar3', pillarName: 'Grafema-Fonema', title: 'El Alfabeto Musical', icon: '🎵', obj: 'Asociación de secuencias fónicas con notas' },
+      { id: 18, pillar: 'pilar3', pillarName: 'Grafema-Fonema', title: 'Lluvia de Letras del Cielo', icon: '🌧️', obj: 'Identificación dinámica en movimiento' },
+
+      { id: 19, pillar: 'pilar4', pillarName: 'Sílabas/Memoria', title: 'El Tren de las Sílabas', icon: '🚂', obj: 'Ensamblaje directo de consonante y vocal (C+V)' },
+      { id: 20, pillar: 'pilar4', pillarName: 'Sílabas/Memoria', title: 'Simón Fonológico', icon: '🚦', obj: 'Retención secuencial de fonemas en orden' },
+      { id: 21, pillar: 'pilar4', pillarName: 'Sílabas/Memoria', title: 'Fábrica de Palabras C-V-C', icon: '🏭', obj: 'Construcción de palabras fonéticas de 3 letras' },
+      { id: 22, pillar: 'pilar4', pillarName: 'Sílabas/Memoria', title: 'Torre de Sílabas Desordenadas', icon: '🗼', obj: 'Ordenar sílabas para reconstruir la palabra' },
+      { id: 23, pillar: 'pilar4', pillarName: 'Sílabas/Memoria', title: 'El Puente Cortado', icon: '🌉', obj: 'Completar el grafema faltante' },
+      { id: 24, pillar: 'pilar4', pillarName: 'Sílabas/Memoria', title: 'Flash de Memoria Rápida', icon: '⚡', obj: 'Fijación y recuerdo visual tras 2 segundos' },
+
+      { id: 25, pillar: 'pilar5', pillarName: 'Rastreo/Crucigramas', title: 'La Linterna en la Noche', icon: '🔦', obj: 'Rastreo visual focalizado en la oscuridad' },
+      { id: 26, pillar: 'pilar5', pillarName: 'Rastreo/Crucigramas', title: 'Pista de Carreras Lectora', icon: '🏎️', obj: 'Movimiento sacádico fluido de izquierda a derecha' },
+      { id: 27, pillar: 'pilar5', pillarName: 'Rastreo/Crucigramas', title: 'El Radar de la Letra Clave', icon: '📡', obj: 'Atención selectiva continua sobre cinta en marcha' },
+      { id: 28, pillar: 'pilar5', pillarName: 'Rastreo/Crucigramas', title: 'Lectura con Metrónomo Rítmico', icon: '⏱️', obj: 'Velocidad de denominación automatizada (RAN)' },
+      { id: 29, pillar: 'pilar5', pillarName: 'Rastreo/Crucigramas', title: 'Sopa y Crucigrama Dinámico', icon: '🍲', obj: 'Búsqueda en cuadrícula con generación aleatoria' },
+      { id: 30, pillar: 'pilar5', pillarName: 'Rastreo/Crucigramas', title: 'El Desafío Maestro de las 10 Gemas', icon: '👑', obj: 'Circuito integrado de los 5 pilares' }
+    ];
+
+    let currentActiveGame = null;
+    let currentGameInstance = null;
+    let gameStartTime = 0;
+    let currentFilter = 'todos';
+
+    function initHub() {
+      setDifficulty(currentDifficulty);
+      updateHeaderStats();
+      renderGamesGrid();
+    }
+
+    function updateHeaderStats() {
+      const summary = analytics.getSummary();
+      document.getElementById('headerStars').textContent = summary.totalStars;
+      document.getElementById('headerGamesCount').textContent = `${summary.completedGamesSet.size}/30`;
+    }
+
+    function filterPillar(pillarId) {
+      currentFilter = pillarId;
+      document.querySelectorAll('.pillar-tab').forEach(tab => {
+        if (tab.dataset.pillar === pillarId) {
+          tab.classList.remove('bg-slate-800', 'text-slate-300');
+          tab.classList.add('bg-brand-500', 'text-white');
+        } else {
+          tab.classList.remove('bg-brand-500', 'text-white');
+          tab.classList.add('bg-slate-800', 'text-slate-300');
+        }
+      });
+      renderGamesGrid();
+    }
+
+    function renderGamesGrid() {
+      const grid = document.getElementById('gamesGrid');
+      grid.innerHTML = '';
+      const summary = analytics.getSummary();
+      const filtered = GAMES_CATALOG.filter(g => currentFilter === 'todos' || g.pillar === currentFilter);
+
+      filtered.forEach(game => {
+        const isDone = summary.completedGamesSet.has(game.id);
+        const card = document.createElement('div');
+        card.className = `game-card bg-slate-800/90 border border-slate-700/70 hover:border-brand-500/50 rounded-2xl p-4 cursor-pointer transition shadow flex flex-col justify-between ${isDone ? 'ring-1 ring-emerald-500/40' : ''}`;
+        card.onclick = () => launchGame(game.id);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <span class="w-10 h-10 rounded-xl bg-slate-700/70 flex items-center justify-center text-xl">
+                ${game.icon}
+              </span>
+              <div class="flex items-center gap-1.5">
+                ${isDone ? '<span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full">✓ Listo</span>' : ''}
+                <span class="text-xs font-mono font-bold text-slate-400">#${game.id}</span>
+              </div>
+            </div>
+            <h4 class="font-extrabold text-white text-sm leading-snug">${game.title}</h4>
+            <p class="text-xs text-slate-400 mt-1 line-clamp-2">${game.obj}</p>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-700/60 flex items-center justify-between text-xs">
+            <span class="text-slate-400 font-semibold">${game.pillarName}</span>
+            <span class="text-brand-400 font-bold flex items-center gap-1">Jugar ➔</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function goHome() {
+      if (currentGameInstance && currentGameInstance.destroy) {
+        currentGameInstance.destroy();
+      }
+      currentActiveGame = null;
+      currentGameInstance = null;
+      document.getElementById('hubView').classList.remove('hidden');
+      document.getElementById('gamePlayView').classList.add('hidden');
+      updateHeaderStats();
+      renderGamesGrid();
+    }
+
+    function playRandomGame() {
+      const randomGame = getRandomItem(GAMES_CATALOG);
+      launchGame(randomGame.id);
+    }
+
+    function toggleDyslexiaMode() {
+      document.body.classList.toggle('dyslexia-mode');
+      const btn = document.getElementById('toggleDyslexiaBtn');
+      if (document.body.classList.contains('dyslexia-mode')) {
+        btn.classList.add('bg-brand-600', 'text-white');
+      } else {
+        btn.classList.remove('bg-brand-600', 'text-white');
+      }
+    }
+
+    function setFeedback(msg, isSuccess = null) {
+      const fb = document.getElementById('gameFeedbackBar');
+      fb.textContent = msg;
+      if (isSuccess === true) {
+        fb.className = 'mt-4 p-3.5 rounded-2xl bg-emerald-950/80 border border-emerald-600 text-emerald-300 font-bold text-sm transition-all duration-300';
+      } else if (isSuccess === false) {
+        fb.className = 'mt-4 p-3.5 rounded-2xl bg-amber-950/80 border border-amber-600 text-amber-300 font-bold text-sm transition-all duration-300';
+      } else {
+        fb.className = 'mt-4 p-3.5 rounded-2xl bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm transition-all duration-300';
+      }
+    }
+
+    function repeatCurrentInstruction() {
+      if (currentGameInstance && currentGameInstance.instruction) {
+        sound.speak(currentGameInstance.instruction);
+      }
+    }
+
+    function launchGame(gameId) {
+      const gameData = GAMES_CATALOG.find(g => g.id === gameId);
+      if (!gameData) return;
+
+      if (currentGameInstance && currentGameInstance.destroy) {
+        currentGameInstance.destroy();
+      }
+
+      currentActiveGame = gameData;
+      gameStartTime = Date.now();
+
+      document.getElementById('hubView').classList.add('hidden');
+      document.getElementById('gamePlayView').classList.remove('hidden');
+
+      const diffLabel = currentDifficulty === 'facil' ? '🟢 Fácil' : currentDifficulty === 'dificil' ? '🔴 Desafío' : '🟡 Medio';
+      document.getElementById('currentGameBadge').textContent = `Juego #${gameData.id} • ${diffLabel}`;
+      document.getElementById('currentGameTitle').textContent = gameData.title;
+      document.getElementById('currentGameObjective').textContent = gameData.obj;
+      document.getElementById('currentGameScore').textContent = '0';
+      setFeedback('Escucha con atención o pulsa el Tutorial si necesitas una pista teórica.');
+
+      const stage = document.getElementById('gameStage');
+      stage.innerHTML = '';
+
+      currentGameInstance = createGameInstance(gameData, stage);
+      if (currentGameInstance && currentGameInstance.init) {
+        currentGameInstance.init();
+      }
+    }
+
+    function finishGameSession(stats) {
+      sound.playVictoryFanfare();
+      triggerConfetti();
+
+      const duration = Math.max(5, Math.round((Date.now() - gameStartTime) / 1000));
+      const sessionResult = analytics.recordSession({
+        gameId: currentActiveGame.id,
+        gameName: currentActiveGame.title,
+        pillarId: currentActiveGame.pillar,
+        pillarName: currentActiveGame.pillarName,
+        score: stats.score || 100,
+        correctAnswers: stats.correct || 5,
+        totalAttempts: stats.attempts || 5,
+        durationSeconds: duration,
+        specificErrors: stats.errors || []
+      });
+
+      document.getElementById('victoryScore').textContent = sessionResult.score;
+      document.getElementById('victoryAccuracy').textContent = `${sessionResult.accuracy}%`;
+      document.getElementById('victoryModal').classList.remove('hidden');
+      updateHeaderStats();
+    }
+
+    function replayCurrentGame() {
+      document.getElementById('victoryModal').classList.add('hidden');
+      if (currentActiveGame) launchGame(currentActiveGame.id);
+    }
+
+    function playNextGame() {
+      document.getElementById('victoryModal').classList.add('hidden');
+      if (!currentActiveGame) { goHome(); return; }
+      const nextId = (currentActiveGame.id % 30) + 1;
+      launchGame(nextId);
+    }
+
+    /* =====================================================================
+       6. LÓGICA COMPLETA DE LOS 30 JUEGOS CON NIVELES DE DIFICULTAD
+       ===================================================================== */
+    function createGameInstance(game, stage) {
+      const gId = game.id;
+      let score = 0;
+      let round = 0;
+      let correctCount = 0;
+      let attemptCount = 0;
+      let specificErrors = [];
+
+      function updateScoreUI() {
+        document.getElementById('currentGameScore').textContent = score;
+      }
+
+      /* JUEGO 1: Cazador de Sonidos Iniciales (Adaptado a Dificultad) */
+      if (gId === 1) {
+        const pool = pickRandom(CONTENT_POOLS.initialSounds, 5);
+        const rounds = pool.map(item => {
+          let opts = [item.letter];
+          if (currentDifficulty === 'facil') {
+            opts.push(item.distractors[0]);
+          } else if (currentDifficulty === 'medio') {
+            opts.push(item.distractors[0], item.distractors[1]);
+          } else {
+            opts.push(item.distractors[0], item.distractors[1], item.distractors[2] || 'K');
+          }
+          return { word: item.word, correct: item.letter, options: shuffle(opts) };
+        });
+
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= rounds.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = rounds[round];
+            this.instruction = `Escucha la palabra: ${r.word}. ¿Con qué sonido empieza?`;
+            sound.speak(this.instruction);
+            setFeedback(`¿Cuál es el sonido inicial de "${r.word}"?`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-lg w-full">
+                <div class="text-xs uppercase tracking-wider text-slate-400 font-bold">Ronda ${round + 1} de ${rounds.length}</div>
+                <div class="bg-slate-900 border-2 border-brand-500/40 rounded-3xl p-6 shadow-xl flex flex-col items-center">
+                  <div class="text-5xl mb-2">🗣️</div>
+                  <div class="text-3xl font-black text-white tracking-widest">${r.word}</div>
+                </div>
+                <div class="grid grid-cols-${r.options.length} gap-3">
+                  ${r.options.map(opt => `
+                    <button class="opt-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-2xl text-2xl font-black text-white shadow transition" data-val="${opt}">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            stage.querySelectorAll('.opt-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                const choice = btn.dataset.val;
+                if (choice === r.correct) {
+                  score += 20;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  setFeedback(`¡Excelente! "${r.word}" empieza con /${r.correct.toLowerCase()}/`, true);
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  specificErrors.push(`Confundió ${r.word} con ${choice}`);
+                  sound.playGentleRetryTone();
+                  setFeedback(`Casi... Escucha el primer sonido de ${r.word}.`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 2: El Eco de las Rimas (CON TRAMPAS Y NIVELES) */
+      if (gId === 2) {
+        const pool = CONTENT_POOLS.rhymesByDiff[currentDifficulty] || CONTENT_POOLS.rhymesByDiff.medio;
+        const pairs = pickRandom(pool, Math.min(5, pool.length));
+
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= pairs.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const p = pairs[round];
+            this.instruction = `¿Riman estas palabras? ${p.w1} y ${p.w2}`;
+            sound.speak(this.instruction);
+            setFeedback(`¿Riman "${p.w1}" y "${p.w2}"?`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-xs text-slate-400 font-bold uppercase">Pareja ${round + 1} de ${pairs.length}</div>
+                <div class="flex items-center justify-center gap-3">
+                  <div class="flex-1 bg-slate-900 border border-slate-700 p-4 rounded-2xl text-lg font-black text-white">
+                    ${p.w1}
+                  </div>
+                  <span class="text-xl text-slate-500 font-bold">⇄</span>
+                  <div class="flex-1 bg-slate-900 border border-slate-700 p-4 rounded-2xl text-lg font-black text-white">
+                    ${p.w2}
+                  </div>
+                </div>
+                <button onclick="speakText('${p.w1} ... y ... ${p.w2}')" class="px-4 py-2 bg-slate-800 text-brand-300 text-xs font-bold rounded-xl transition">
+                  🔊 Escuchar ambas palabras
+                </button>
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                  <button id="btnRhymeYes" class="py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-base font-black shadow transition">
+                    🔔 ¡SÍ Riman!
+                  </button>
+                  <button id="btnRhymeNo" class="py-4 bg-slate-700 hover:bg-slate-600 text-white rounded-2xl text-base font-black shadow transition">
+                    ❌ No Riman
+                  </button>
+                </div>
+              </div>
+            `;
+
+            const handleAns = (ans) => {
+              attemptCount++;
+              if (ans === p.rhymes) {
+                score += 20;
+                correctCount++;
+                sound.playSuccessTone();
+                updateScoreUI();
+                setFeedback(`¡Exacto! ${p.reason || ''}`, true);
+                round++;
+                setTimeout(() => this.renderRound(), 1200);
+              } else {
+                specificErrors.push(`Fallo rima: ${p.w1}-${p.w2}`);
+                sound.playGentleRetryTone();
+                setFeedback(`Ojo: ${p.reason || 'Escucha el final de cada palabra.'}`, false);
+              }
+            };
+
+            stage.querySelector('#btnRhymeYes').onclick = () => handleAns(true);
+            stage.querySelector('#btnRhymeNo').onclick = () => handleAns(false);
+          }
+        };
+      }
+
+      /* JUEGO 3: Contador de Golpes de Sílaba */
+      if (gId === 3) {
+        const words = pickRandom(CONTENT_POOLS.syllableCounts, 4);
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= words.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const w = words[round];
+            const cleanWord = w.split.replace(/-/g, '');
+            this.instruction = `¿Cuántas sílabas tiene ${cleanWord}?`;
+            sound.speak(this.instruction);
+            setFeedback(`Cuenta las sílabas de "${cleanWord}"`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl">
+                  <div class="text-5xl mb-2">🥁</div>
+                  <div class="text-3xl font-black text-white">${cleanWord}</div>
+                </div>
+                <div class="grid grid-cols-4 gap-3">
+                  ${[1, 2, 3, 4].map(n => `
+                    <button class="num-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-2xl text-2xl font-black text-white shadow" data-num="${n}">
+                      ${n}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            stage.querySelectorAll('.num-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (parseInt(btn.dataset.num, 10) === w.count) {
+                  score += 25;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  setFeedback(`¡Correcto! ${cleanWord} tiene ${w.count} sílabas: ${w.split}`, true);
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                  setFeedback(`Da palmadas con la voz: ${cleanWord}`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 4: ¿Quién se Escapó? (Omisión Fonémica) */
+      if (gId === 4) {
+        const rounds = pickRandom(CONTENT_POOLS.omissions, 4);
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= rounds.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = rounds[round];
+            this.instruction = `Si a ${r.full} le quitamos el primer sonido, ¿qué nos queda?`;
+            sound.speak(this.instruction);
+            setFeedback(`Si a "${r.full}" le quitas el primer sonido...`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl flex items-center justify-center gap-3">
+                  <span class="text-2xl font-black text-white">${r.full}</span>
+                  <span class="text-rose-400 font-bold text-xl">− [sonido inicial] =</span>
+                  <span class="text-2xl font-black text-amber-400">❓</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  ${shuffle(r.options).map(opt => `
+                    <button class="opt-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-2xl text-xl font-black text-white shadow" data-val="${opt}">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            stage.querySelectorAll('.opt-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.val === r.left) {
+                  score += 25;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  setFeedback(`¡Brillante! Queda "${r.left}"`, true);
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                  setFeedback(`Pronuncia ${r.full} sin hacer el primer sonido.`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 5: Fusión de Sonidos Mágicos */
+      if (gId === 5) {
+        const pool = pickRandom(CONTENT_POOLS.cvcWords, 4);
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= pool.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = pool[round];
+            const distractors = pickRandom(CONTENT_POOLS.cvcWords.filter(x => x.word !== r.word), 2).map(x => x.word);
+            const options = shuffle([r.word, ...distractors]);
+
+            this.instruction = `Une los sonidos: ${r.phonemes}. ¿Qué palabra se forma?`;
+            sound.speak(this.instruction);
+            setFeedback(`Funde los sonidos: ${r.phonemes}`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl flex flex-col items-center">
+                  <div class="text-5xl mb-2">${r.icon}</div>
+                  <div class="text-2xl font-black text-amber-300 tracking-widest">${r.phonemes}</div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  ${options.map(opt => `
+                    <button class="opt-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-2xl text-xl font-black text-white shadow" data-val="${opt}">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            stage.querySelectorAll('.opt-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.val === r.word) {
+                  score += 25;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  setFeedback(`¡Gran trabajo! Juntos forman "${r.word}"`, true);
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                  setFeedback(`Júntalos poco a poco: ${r.phonemes}`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 6: El Sonido Espía */
+      if (gId === 6) {
+        const pool = [
+          { word: 'SAPO', target: 'S', pos: 'INICIO', posText: 'Al inicio' },
+          { word: 'MESA', target: 'S', pos: 'MEDIO', posText: 'En el medio' },
+          { word: 'AUTOBÚS', target: 'S', pos: 'FINAL', posText: 'Al final' },
+          { word: 'LÁPIZ', target: 'L', pos: 'INICIO', posText: 'Al inicio' }
+        ];
+        const rounds = pickRandom(pool, 4);
+
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= rounds.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = rounds[round];
+            this.instruction = `En ${r.word}, ¿dónde suena la letra ${r.target}?`;
+            sound.speak(this.instruction);
+            setFeedback(`¿Dónde está el sonido /${r.target.toLowerCase()}/ en "${r.word}"?`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl text-center">
+                  <div class="text-3xl font-black text-white">${r.word}</div>
+                  <div class="text-xs text-brand-400 mt-2">Buscamos el sonido: <span class="text-lg font-bold">/${r.target.toLowerCase()}/</span></div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  <button class="pos-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-xl font-bold text-xs text-white" data-pos="INICIO">◀️ Al Inicio</button>
+                  <button class="pos-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-xl font-bold text-xs text-white" data-pos="MEDIO">⏺️ En el Medio</button>
+                  <button class="pos-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-xl font-bold text-xs text-white" data-pos="FINAL">▶️ Al Final</button>
+                </div>
+              </div>
+            `;
+
+            stage.querySelectorAll('.pos-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.pos === r.pos) {
+                  score += 25;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  setFeedback(`¡Exacto! El sonido está ${r.posText}.`, true);
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                  setFeedback(`Pronuncia despacio: ${r.word}`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 7: El Desafío Espejo (b vs d - Con Adaptación de Dificultad) */
+      if (gId === 7) {
+        const sequence = Array.from({ length: 8 }, () => Math.random() > 0.5 ? 'b' : 'd');
+        let idx = 0;
+
+        return {
+          instruction: 'Mira bien la letra. La b tiene la barriguita hacia adelante. La d tiene la espalda.',
+          init() {
+            sound.speak(this.instruction);
+            this.renderTarget();
+          },
+          renderTarget() {
+            if (idx >= sequence.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const currentLetter = sequence[idx];
+            setFeedback(`¿Es una "b" o una "d"?`);
+
+            const letterColorClass = currentDifficulty === 'dificil'
+              ? 'text-white'
+              : currentLetter === 'b' ? 'char-b' : 'char-d';
+
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-xs text-slate-400 font-bold uppercase">Letra ${idx + 1} de ${sequence.length}</div>
+                <div class="bg-slate-900 border-2 border-slate-700 p-8 rounded-3xl flex flex-col items-center shadow-2xl">
+                  <div class="text-8xl font-black ${letterColorClass} tracking-wider mb-2">
+                    ${currentLetter}
+                  </div>
+                  ${currentDifficulty !== 'dificil' ? `
+                    <div class="flex items-center gap-6 mt-3 text-xs text-slate-400 bg-slate-800 px-4 py-1.5 rounded-xl">
+                      <span class="text-blue-400 font-bold">👍 Izq = b</span>
+                      <span class="text-amber-400 font-bold">👍 Der = d</span>
+                    </div>
+                  ` : '<div class="text-xs text-slate-500 mt-2 font-bold">Nivel Desafío: Sin pistas de color</div>'}
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <button id="btnChooseB" class="py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl text-2xl font-black text-white shadow transition">
+                    b (barriga)
+                  </button>
+                  <button id="btnChooseD" class="py-5 bg-amber-600 hover:bg-amber-500 rounded-2xl text-2xl font-black text-white shadow transition">
+                    d (espalda)
+                  </button>
+                </div>
+              </div>
+            `;
+
+            const choose = (letter) => {
+              attemptCount++;
+              if (letter === currentLetter) {
+                score += 15;
+                correctCount++;
+                sound.playSuccessTone();
+                updateScoreUI();
+                setFeedback(`¡Perfecto! Es la letra ${currentLetter.toUpperCase()}`, true);
+                idx++;
+                setTimeout(() => this.renderTarget(), 700);
+              } else {
+                specificErrors.push(`Confundió ${currentLetter} con ${letter}`);
+                sound.playGentleRetryTone();
+                setFeedback(`Fíjate hacia dónde mira la panza.`, false);
+              }
+            };
+
+            stage.querySelector('#btnChooseB').onclick = () => choose('b');
+            stage.querySelector('#btnChooseD').onclick = () => choose('d');
+          }
+        };
+      }
+
+      /* JUEGO 8: El Cuarteto Rebelde (b, d, p, q) */
+      if (gId === 8) {
+        const lettersList = ['b', 'd', 'p', 'q'];
+        const rounds = [{ target: getRandomItem(lettersList) }, { target: getRandomItem(lettersList) }];
+
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= rounds.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = rounds[round];
+            const gridSize = currentDifficulty === 'dificil' ? 12 : 9;
+            const targetCount = 3;
+            const grid = [];
+            for (let i = 0; i < targetCount; i++) grid.push(r.target);
+            while (grid.length < gridSize) grid.push(getRandomItem(lettersList.filter(x => x !== r.target)));
+            const shuffledGrid = shuffle(grid);
+
+            this.instruction = `Encuentra y toca todas las letras ${r.target}`;
+            sound.speak(this.instruction);
+            setFeedback(`Toca solo las letras: "${r.target.toUpperCase()}"`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-4 max-w-md w-full">
+                <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+                  <span>Ronda ${round + 1} de ${rounds.length}</span>
+                  <span>Objetivo: <span class="text-brand-400 text-lg font-black uppercase">${r.target}</span></span>
+                </div>
+                <div class="grid grid-cols-3 gap-2.5 bg-slate-900 p-4 rounded-3xl border border-slate-700">
+                  ${shuffledGrid.map(char => `
+                    <button class="grid-cell h-16 bg-slate-800 hover:bg-slate-700 rounded-xl text-3xl font-extrabold text-white shadow transition flex items-center justify-center" data-char="${char}">
+                      ${char}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            let targetsRemaining = targetCount;
+            stage.querySelectorAll('.grid-cell').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                const char = btn.dataset.char;
+                if (char === r.target) {
+                  btn.classList.add('bg-emerald-600', 'pointer-events-none');
+                  sound.playSuccessTone();
+                  targetsRemaining--;
+                  score += 15;
+                  correctCount++;
+                  updateScoreUI();
+                  if (targetsRemaining <= 0) {
+                    setFeedback(`¡Genial! Atrapaste todas las letras "${r.target}"`, true);
+                    round++;
+                    setTimeout(() => this.renderRound(), 1000);
+                  }
+                } else {
+                  btn.classList.add('bg-red-900/60');
+                  sound.playGentleRetryTone();
+                  setFeedback(`Esa es una "${char}". Buscamos la "${r.target}".`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 9: El Impostor Rotado */
+      if (gId === 9) {
+        const pool = [
+          { normal: 'M', impostor: 'W' }, { normal: 'n', impostor: 'u' },
+          { normal: 'E', impostor: '3' }, { normal: 'C', impostor: 'Ɔ' },
+          { normal: 'A', impostor: '∀' }
+        ];
+        const rounds = pickRandom(pool, 3).map(item => {
+          const row = [item.normal, item.normal, item.normal, item.normal];
+          row.splice(Math.floor(Math.random() * 5), 0, item.impostor);
+          return { ...item, row };
+        });
+
+        return {
+          instruction: 'Toca la letra que está rotada o al revés.',
+          init() { sound.speak(this.instruction); this.renderRound(); },
+          renderRound() {
+            if (round >= rounds.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = rounds[round];
+            setFeedback('¿Cuál es la letra impostora que dio la vuelta?');
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-lg w-full">
+                <div class="flex flex-wrap justify-center gap-3 bg-slate-900 p-6 rounded-3xl border border-slate-700">
+                  ${r.row.map(char => `
+                    <button class="impostor-btn w-16 h-20 bg-slate-800 hover:bg-slate-700 rounded-2xl text-4xl font-black text-white shadow-lg transition" data-char="${char}">
+                      ${char}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.impostor-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.char === r.impostor) {
+                  btn.classList.add('bg-emerald-600');
+                  score += 33;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 10: Siluetas y Sombras */
+      if (gId === 10) {
+        const pool = [
+          { char: 'A', silhouette: '▲', options: ['▲', '■', '●'] },
+          { char: 'O', silhouette: '●', options: ['■', '●', '▲'] },
+          { char: 'T', silhouette: '┬', options: ['┼', '┬', '┴'] }
+        ];
+        return {
+          instruction: 'Une la letra con la forma que coincide.',
+          init() { sound.speak(this.instruction); this.renderRound(); },
+          renderRound() {
+            if (round >= pool.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const item = pool[round];
+            setFeedback(`¿Qué forma coincide con "${item.char}"?`);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl flex justify-center text-7xl font-black text-white">
+                  ${item.char}
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  ${shuffle(item.options).map(opt => `
+                    <button class="opt-btn py-5 bg-slate-700 hover:bg-brand-600 rounded-2xl text-4xl text-amber-300 shadow" data-opt="${opt}">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.opt-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.opt === item.silhouette) {
+                  score += 33;
+                  correctCount++;
+                  sound.playSuccessTone();
+                  updateScoreUI();
+                  round++;
+                  setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 11: Laberinto de la Letra Fiel (Procedural) */
+      if (gId === 11) {
+        const targetLetter = getRandomItem(['S', 'M', 'B', 'P', 'L', 'D']);
+        const distractors = ['A', 'E', 'O', 'K', 'R', 'F', 'X', 'Z'].filter(x => x !== targetLetter);
+        const grid = Array(4).fill(null).map(() => Array(4).fill(null));
+        const pathCoords = [[0,0], [0,1], [1,1], [1,2], [2,2], [2,3], [3,3]];
+        pathCoords.forEach(([r, c]) => { grid[r][c] = targetLetter; });
+
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 4; c++) {
+            if (!grid[r][c]) grid[r][c] = getRandomItem(distractors);
+          }
+        }
+
+        return {
+          instruction: `Pisa solo las casillas con la letra ${targetLetter} desde inicio hasta meta.`,
+          init() {
+            sound.speak(this.instruction);
+            setFeedback(`Pisa solo las casillas con la letra "${targetLetter}"`);
+            this.render();
+          },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-4 max-w-sm w-full">
+                <div class="flex items-center justify-between text-xs text-slate-400 font-bold">
+                  <span>🚩 Inicio</span>
+                  <span class="text-brand-400 font-black">Camino de: ${targetLetter}</span>
+                  <span>🏆 Meta</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2 bg-slate-900 p-3 rounded-2xl border border-slate-700">
+                  ${grid.flat().map(char => `
+                    <button class="maze-cell h-16 bg-slate-800 hover:bg-slate-700 rounded-xl text-2xl font-black text-white shadow" data-char="${char}">
+                      ${char}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            let steps = 0;
+            stage.querySelectorAll('.maze-cell').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.char === targetLetter && !btn.classList.contains('bg-emerald-600')) {
+                  btn.classList.add('bg-emerald-600');
+                  sound.playSuccessTone();
+                  steps++;
+                  score += 15;
+                  correctCount++;
+                  updateScoreUI();
+                  if (steps >= pathCoords.length) {
+                    setFeedback(`¡Meta alcanzada siguiendo la ${targetLetter}!`, true);
+                    setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                  }
+                } else if (btn.dataset.char !== targetLetter) {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 12: Memorama de Letras Gemelas (Mayúsculas y Minúsculas) */
+      if (gId === 12) {
+        const fullAlphabet = ['A','B','C','D','E','F','G','H','I','L','M','N','P','R','S','T','V'];
+        const chosenLetters = pickRandom(fullAlphabet, 4);
+        const cardPairs = [];
+        chosenLetters.forEach((l, i) => {
+          cardPairs.push({ id: i, val: l });
+          cardPairs.push({ id: i, val: l.toLowerCase() });
+        });
+        const pairs = shuffle(cardPairs);
+        let flipped = [];
+        let matched = 0;
+
+        return {
+          instruction: 'Voltea las cartas para emparejar mayúscula con minúscula.',
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="grid grid-cols-4 gap-3 max-w-md w-full">
+                ${pairs.map((card, idx) => `
+                  <button class="memo-card h-20 bg-slate-700 hover:bg-slate-600 rounded-2xl text-2xl font-extrabold text-transparent border border-slate-600 transition flex items-center justify-center shadow" data-pair="${card.id}" data-val="${card.val}">
+                    ?
+                  </button>
+                `).join('')}
+              </div>
+            `;
+            stage.querySelectorAll('.memo-card').forEach(card => {
+              card.onclick = () => {
+                if (card.classList.contains('matched') || flipped.length >= 2 || flipped.includes(card)) return;
+                card.textContent = card.dataset.val;
+                card.classList.remove('text-transparent');
+                card.classList.add('bg-brand-600', 'text-white');
+                sound.speak(card.dataset.val);
+                flipped.push(card);
+
+                if (flipped.length === 2) {
+                  attemptCount++;
+                  const [c1, c2] = flipped;
+                  if (c1.dataset.pair === c2.dataset.pair) {
+                    matched++;
+                    correctCount++;
+                    score += 25;
+                    updateScoreUI();
+                    sound.playSuccessTone();
+                    c1.classList.add('matched', 'bg-emerald-600');
+                    c2.classList.add('matched', 'bg-emerald-600');
+                    flipped = [];
+                    if (matched >= 4) {
+                      setFeedback('¡Completaste todas las parejas!', true);
+                      setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                    }
+                  } else {
+                    sound.playGentleRetryTone();
+                    setTimeout(() => {
+                      c1.textContent = '?'; c2.textContent = '?';
+                      c1.classList.add('text-transparent'); c2.classList.add('text-transparent');
+                      c1.classList.remove('bg-brand-600', 'text-white'); c2.classList.remove('bg-brand-600', 'text-white');
+                      flipped = [];
+                    }, 1000);
+                  }
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 13: La Tecla Parlante */
+      if (gId === 13) {
+        const letters = [
+          { char: 'A', phoneme: 'aaa' }, { char: 'E', phoneme: 'eee' }, { char: 'I', phoneme: 'iii' },
+          { char: 'O', phoneme: 'ooo' }, { char: 'U', phoneme: 'uuu' }, { char: 'M', phoneme: 'mmmm' },
+          { char: 'S', phoneme: 'ssss' }, { char: 'L', phoneme: 'llll' }, { char: 'P', phoneme: 'p' },
+          { char: 'T', phoneme: 't' }, { char: 'D', phoneme: 'd' }, { char: 'R', phoneme: 'rrrr' }
+        ];
+        let explored = new Set();
+        return {
+          instruction: 'Toca cada tecla para escuchar su fonema puro.',
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-5 max-w-lg w-full">
+                <div class="text-xs text-slate-400 font-bold uppercase">Exploradas: <span id="expCount">0</span> de 6</div>
+                <div class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 bg-slate-900 p-4 rounded-3xl border border-slate-700">
+                  ${letters.map(l => `
+                    <button class="key-btn h-16 bg-slate-800 hover:bg-brand-600 rounded-xl text-2xl font-black text-white shadow border border-slate-700" data-char="${l.char}" data-phoneme="${l.phoneme}">
+                      ${l.char}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.key-btn').forEach(btn => {
+              btn.onclick = () => {
+                sound.speak(btn.dataset.phoneme, 0.8);
+                btn.classList.add('bg-brand-500');
+                explored.add(btn.dataset.char);
+                document.getElementById('expCount').textContent = Math.min(6, explored.size);
+                score += 15; correctCount++; attemptCount++; updateScoreUI();
+                if (explored.size >= 6) {
+                  setFeedback('¡Excelente explorador!', true);
+                  setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 14: Diana de Fonemas */
+      if (gId === 14) {
+        const pool = [
+          { sound: 'mmm', char: 'M', opts: ['M', 'S', 'T'] },
+          { sound: 'sss', char: 'S', opts: ['L', 'S', 'P'] },
+          { sound: 'rrr', char: 'R', opts: ['B', 'D', 'R'] }
+        ];
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= pool.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = pool[round];
+            this.instruction = `Escucha el sonido: ${r.sound}. ¿Cuál es la letra?`;
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-5xl">🎯</div>
+                <button onclick="speakText('${r.sound}')" class="px-4 py-2 bg-slate-800 text-brand-300 rounded-xl text-xs font-bold">
+                  🔊 Volver a escuchar sonido
+                </button>
+                <div class="grid grid-cols-3 gap-3">
+                  ${shuffle(r.opts).map(opt => `
+                    <button class="diana-btn py-6 bg-slate-700 hover:bg-brand-600 rounded-2xl text-4xl font-black text-white shadow" data-char="${opt}">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.diana-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.char === r.char) {
+                  score += 33; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                  round++; setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 15: Cofre Vocálico */
+      if (gId === 15) {
+        const words = pickRandom([
+          { word: 'SOL', vowel: 'O' }, { word: 'PAN', vowel: 'A' },
+          { word: 'PEZ', vowel: 'E' }, { word: 'LUZ', vowel: 'U' }
+        ], 3);
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= words.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const item = words[round];
+            this.instruction = `¿Qué vocal suena en ${item.word}?`;
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl text-3xl font-black text-white">
+                  💎 ${item.word}
+                </div>
+                <div class="grid grid-cols-5 gap-2">
+                  ${['A', 'E', 'I', 'O', 'U'].map(v => `
+                    <button class="vowel-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-xl text-2xl font-black text-white" data-v="${v}">${v}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.vowel-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.v === item.vowel) {
+                  score += 33; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                  round++; setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 16: La Ruleta de Consonantes */
+      if (gId === 16) {
+        const pool = [
+          { char: 'M', word: 'MANZANA', icon: '🍎' },
+          { char: 'P', word: 'PELOTA', icon: '⚽' },
+          { char: 'S', word: 'SOL', icon: '☀️' }
+        ];
+        return {
+          instruction: 'Asocia la letra con el objeto que empieza con ese sonido.',
+          init() { sound.speak(this.instruction); this.renderRound(); },
+          renderRound() {
+            if (round >= pool.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const current = pool[round];
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-7xl font-black text-brand-400">${current.char}</div>
+                <div class="grid grid-cols-3 gap-3">
+                  ${shuffle(pool).map(opt => `
+                    <button class="choice-btn py-4 bg-slate-700 hover:bg-slate-600 rounded-2xl flex flex-col items-center gap-1 shadow" data-char="${opt.char}">
+                      <span class="text-4xl">${opt.icon}</span>
+                      <span class="text-xs font-bold text-slate-300">${opt.word}</span>
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.choice-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.char === current.char) {
+                  score += 33; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                  round++; setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 17: El Alfabeto Musical */
+      if (gId === 17) {
+        return {
+          instruction: 'Toca las notas musicales para escuchar los sonidos.',
+          init() {
+            sound.speak(this.instruction);
+            let played = 0;
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-5xl">🎶</div>
+                <div class="flex justify-center gap-2">
+                  ${['DO: A', 'RE: E', 'MI: I', 'FA: O', 'SOL: U'].map((note, i) => `
+                    <button class="note-btn h-28 w-16 bg-slate-700 hover:bg-brand-600 rounded-xl text-white font-bold text-sm shadow flex flex-col justify-end p-2 border border-slate-600" data-idx="${i}">
+                      ${note.split(': ')[1]}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.note-btn').forEach(btn => {
+              btn.onclick = () => {
+                sound.playSuccessTone();
+                played++; correctCount++; attemptCount++; score += 20; updateScoreUI();
+                if (played >= 5) setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 18: Lluvia de Letras */
+      if (gId === 18) {
+        const targetChar = getRandomItem(['M', 'S', 'P', 'L']);
+        let caught = 0;
+        return {
+          instruction: `Atrapa las letras ${targetChar}.`,
+          init() {
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="text-center space-y-4 max-w-md w-full">
+                <div class="text-xs text-slate-400 font-bold uppercase">Atrapa 2 letras: ${targetChar}</div>
+                <div class="h-56 bg-slate-900 border border-slate-700 rounded-3xl flex items-center justify-around">
+                  <button class="rain-btn text-4xl font-black text-brand-400 bg-slate-800 p-4 rounded-2xl animate-bounce" data-c="${targetChar}">${targetChar}</button>
+                  <button class="rain-btn text-4xl font-black text-slate-400 bg-slate-800 p-4 rounded-2xl" data-c="T">T</button>
+                  <button class="rain-btn text-4xl font-black text-brand-400 bg-slate-800 p-4 rounded-2xl animate-bounce" data-c="${targetChar}">${targetChar}</button>
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.rain-btn').forEach(btn => {
+              btn.onclick = () => {
+                if (btn.dataset.c === targetChar && !btn.classList.contains('caught')) {
+                  btn.classList.add('caught', 'opacity-20');
+                  caught++; correctCount++; score += 50; sound.playSuccessTone(); updateScoreUI();
+                  if (caught >= 2) setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                } else if (btn.dataset.c !== targetChar) {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 19: Tren de Sílabas */
+      if (gId === 19) {
+        const rounds = [{ c: 'M', v: 'A', res: 'MA' }, { c: 'S', v: 'O', res: 'SO' }, { c: 'P', v: 'I', res: 'PI' }];
+        return {
+          instruction: '',
+          init() { this.renderRound(); },
+          renderRound() {
+            if (round >= rounds.length) {
+              finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const r = rounds[round];
+            this.instruction = `Une ${r.c} con ${r.v}. ¿Qué sílaba se forma?`;
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="flex items-center justify-center gap-3">
+                  <div class="bg-blue-600 px-5 py-4 rounded-2xl text-2xl font-black text-white">🚂 ${r.c}</div>
+                  <span class="text-xl font-bold text-slate-500">+</span>
+                  <div class="bg-amber-600 px-5 py-4 rounded-2xl text-2xl font-black text-white">🚃 ${r.v}</div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  ${shuffle([r.res, r.c + 'E', 'PA']).map(opt => `
+                    <button class="train-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-2xl text-2xl font-black text-white" data-s="${opt}">${opt}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.train-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.s === r.res) {
+                  score += 33; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                  round++; setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 20: Simón Fonológico (Memoria Secuencial con Dificultad) */
+      if (gId === 20) {
+        const len = currentDifficulty === 'facil' ? 2 : currentDifficulty === 'dificil' ? 4 : 3;
+        const seqLetters = pickRandom(['A', 'M', 'S', 'P', 'L'], len);
+        let userSeq = [];
+
+        return {
+          instruction: 'Recuerda las letras en el orden que se iluminan.',
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-sm w-full">
+                <button id="btnPlaySeq" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold">
+                  ▶️ Ver y escuchar secuencia (${len} letras)
+                </button>
+                <div class="grid grid-cols-3 gap-3">
+                  ${['A', 'M', 'S', 'P', 'L', 'T'].map(l => `
+                    <button class="simon-pad h-20 bg-slate-800 border-2 border-slate-700 rounded-2xl text-2xl font-black text-white flex items-center justify-center" data-val="${l}">${l}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            const playSeq = () => {
+              userSeq = []; let step = 0;
+              const interval = setInterval(() => {
+                if (step >= seqLetters.length) { clearInterval(interval); setFeedback('¡Tu turno!'); return; }
+                const pad = stage.querySelector(`.simon-pad[data-val="${seqLetters[step]}"]`);
+                if (pad) {
+                  pad.classList.add('bg-amber-500');
+                  sound.speak(seqLetters[step]);
+                  setTimeout(() => pad.classList.remove('bg-amber-500'), 500);
+                }
+                step++;
+              }, 900);
+            };
+            stage.querySelector('#btnPlaySeq').onclick = playSeq;
+            stage.querySelectorAll('.simon-pad').forEach(pad => {
+              pad.onclick = () => {
+                const val = pad.dataset.val; userSeq.push(val); sound.speak(val); attemptCount++;
+                const cur = userSeq.length - 1;
+                if (userSeq[cur] === seqLetters[cur]) {
+                  correctCount++;
+                  if (userSeq.length === seqLetters.length) {
+                    score += 100; sound.playSuccessTone(); updateScoreUI();
+                    setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                  }
+                } else {
+                  sound.playGentleRetryTone(); userSeq = [];
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 21: Fábrica CVC */
+      if (gId === 21) {
+        const chosen = getRandomItem(CONTENT_POOLS.cvcWords);
+        let assembled = '';
+        return {
+          instruction: `Construye la palabra ${chosen.word}.`,
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-5xl">${chosen.icon}</div>
+                <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl flex justify-center gap-3">
+                  <div class="w-14 h-16 bg-slate-800 border-2 border-dashed border-slate-600 rounded-xl flex items-center justify-center text-3xl font-black text-brand-400" id="slot0">-</div>
+                  <div class="w-14 h-16 bg-slate-800 border-2 border-dashed border-slate-600 rounded-xl flex items-center justify-center text-3xl font-black text-brand-400" id="slot1">-</div>
+                  <div class="w-14 h-16 bg-slate-800 border-2 border-dashed border-slate-600 rounded-xl flex items-center justify-center text-3xl font-black text-brand-400" id="slot2">-</div>
+                </div>
+                <div class="flex justify-center gap-3">
+                  ${shuffle(chosen.word.split('')).map(char => `
+                    <button class="char-tile w-16 h-16 bg-slate-700 hover:bg-brand-600 rounded-xl text-3xl font-black text-white shadow" data-c="${char}">${char}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.char-tile').forEach(btn => {
+              btn.onclick = () => {
+                const c = btn.dataset.c; if (btn.disabled) return;
+                attemptCount++;
+                if (c === chosen.word[assembled.length]) {
+                  stage.querySelector(`#slot${assembled.length}`).textContent = c;
+                  assembled += c; btn.disabled = true; btn.classList.add('opacity-30');
+                  sound.playSuccessTone(); correctCount++; score += 33; updateScoreUI();
+                  if (assembled === chosen.word) setTimeout(() => finishGameSession({ score: 100, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 22: Torre de Sílabas */
+      if (gId === 22) {
+        const item = getRandomItem(CONTENT_POOLS.syllableTowerWords);
+        let picked = [];
+        return {
+          instruction: `Ordena las sílabas de ${item.word}.`,
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-6xl">${item.icon}</div>
+                <div class="flex justify-center gap-4">
+                  ${shuffle(item.syls).map(s => `
+                    <button class="syl-btn px-6 py-5 bg-slate-700 hover:bg-brand-600 rounded-2xl text-2xl font-black text-white shadow" data-syl="${s}">${s}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.syl-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.syl === item.syls[picked.length]) {
+                  picked.push(btn.dataset.syl); btn.classList.add('bg-emerald-600', 'pointer-events-none');
+                  sound.playSuccessTone(); correctCount++; score += 50; updateScoreUI();
+                  if (picked.length === item.syls.length) setTimeout(() => finishGameSession({ score: 100, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 23: Puente Cortado */
+      if (gId === 23) {
+        const ch = getRandomItem(CONTENT_POOLS.brokenBridge);
+        return {
+          instruction: `¿Qué letra falta en ${ch.display}?`,
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-6xl">${ch.icon}</div>
+                <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl text-3xl font-black text-white">${ch.display}</div>
+                <div class="grid grid-cols-2 gap-4">
+                  ${ch.options.map(opt => `
+                    <button class="btn-bd py-5 bg-brand-600 hover:bg-brand-500 rounded-2xl text-4xl font-black text-white" data-c="${opt}">${opt}</button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.btn-bd').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.c === ch.correct) {
+                  score += 100; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                  setTimeout(() => finishGameSession({ score: 100, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 24: Flash de Memoria */
+      if (gId === 24) {
+        const letters = pickRandom(['A','B','D','E','F','L','M','P','R','S','T'], 3);
+        const target = letters[1];
+        const viewDuration = currentDifficulty === 'facil' ? 3000 : currentDifficulty === 'dificil' ? 1200 : 2000;
+
+        return {
+          instruction: 'Mira las tres letras antes de que se oculten.',
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="flex justify-center gap-4" id="flashCards">
+                  ${letters.map(c => `
+                    <div class="w-20 h-24 bg-slate-700 rounded-2xl text-4xl font-black text-white flex items-center justify-center shadow">${c}</div>
+                  `).join('')}
+                </div>
+                <div id="flashQuestion" class="hidden space-y-4">
+                  <p class="text-sm font-bold text-slate-300">¿Estaba la letra <span class="text-brand-400 text-xl font-black">${target}</span>?</p>
+                  <div class="flex justify-center gap-4">
+                    <button id="btnFlashYes" class="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl">Sí, estaba</button>
+                    <button id="btnFlashNo" class="px-6 py-3 bg-slate-700 text-white font-bold rounded-xl">No estaba</button>
+                  </div>
+                </div>
+              </div>
+            `;
+            setTimeout(() => {
+              stage.querySelectorAll('#flashCards div').forEach(c => { c.textContent = '?'; c.classList.add('text-slate-500'); });
+              stage.querySelector('#flashQuestion').classList.remove('hidden');
+              stage.querySelector('#btnFlashYes').onclick = () => {
+                score += 100; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+              };
+              stage.querySelector('#btnFlashNo').onclick = () => sound.playGentleRetryTone();
+            }, viewDuration);
+          }
+        };
+      }
+
+      /* JUEGO 25: Linterna en la Noche */
+      if (gId === 25) {
+        const target = getRandomItem(['A', 'B', 'D', 'E', 'M', 'P', 'S']);
+        return {
+          instruction: `Encuentra la letra ${target} con tu linterna.`,
+          init() {
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="relative w-full max-w-lg h-72 bg-slate-950 rounded-3xl border border-slate-700 overflow-hidden cursor-crosshair" id="darkRoom">
+                <div class="absolute inset-0 flashlight-overlay pointer-events-none" id="torchMask"></div>
+                <button id="secretLetter" class="absolute text-4xl font-black text-amber-400 p-4" style="left: 60%; top: 40%;">${target}</button>
+                <div class="absolute left-1/4 top-1/3 text-2xl font-bold text-slate-700">M</div>
+                <div class="absolute left-3/4 top-2/3 text-2xl font-bold text-slate-700">S</div>
+              </div>
+            `;
+            const darkRoom = stage.querySelector('#darkRoom');
+            const mask = stage.querySelector('#torchMask');
+            darkRoom.onmousemove = (e) => {
+              const rect = darkRoom.getBoundingClientRect();
+              mask.style.setProperty('--x', `${e.clientX - rect.left}px`);
+              mask.style.setProperty('--y', `${e.clientY - rect.top}px`);
+            };
+            stage.querySelector('#secretLetter').onclick = () => {
+              score += 100; correctCount++; sound.playSuccessTone(); updateScoreUI();
+              setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+            };
+          }
+        };
+      }
+
+      /* JUEGO 26: Pista de Carreras Lectora */
+      if (gId === 26) {
+        const word = getRandomItem(CONTENT_POOLS.raceTrackWords);
+        let step = 0;
+        return {
+          instruction: `Avanza el auto leyendo ${word} de izquierda a derecha.`,
+          init() { sound.speak(this.instruction); this.render(); },
+          render() {
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-lg w-full">
+                <div class="flex items-center justify-between bg-slate-900 border border-slate-700 p-6 rounded-3xl">
+                  ${word.split('').map((l, i) => `
+                    <div class="w-14 h-14 bg-slate-800 rounded-xl flex items-center justify-center text-2xl font-black text-white" id="post${i}">${l}</div>
+                  `).join('')}
+                </div>
+                <button id="btnDrive" class="px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl text-lg shadow">
+                  🏎️ Avanzar al siguiente sonido
+                </button>
+              </div>
+            `;
+            stage.querySelector('#btnDrive').onclick = () => {
+              if (step < word.length) {
+                stage.querySelector(`#post${step}`).classList.add('bg-emerald-600');
+                sound.speak(word[step]);
+                step++; score += 25; correctCount++; attemptCount++; updateScoreUI();
+                if (step >= word.length) {
+                  sound.speak(word);
+                  setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                }
+              }
+            };
+          }
+        };
+      }
+
+      /* JUEGO 27: Radar de la Letra Clave */
+      if (gId === 27) {
+        const targetLetter = getRandomItem(['R', 'S', 'M', 'B', 'P']);
+        const queue = shuffle(['T', targetLetter, 'L', targetLetter, 'P']);
+        let qIdx = 0; let hits = 0;
+
+        return {
+          instruction: `Toca cuando pase la letra ${targetLetter}.`,
+          init() {
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="bg-slate-900 border-2 border-brand-500/50 h-32 rounded-3xl flex items-center justify-center text-6xl font-black text-white" id="radarScreen">${queue[0]}</div>
+                <button id="btnRadarHit" class="w-full py-5 bg-purple-600 hover:bg-purple-500 text-white font-black text-2xl rounded-2xl shadow">🎯 ¡ES LA ${targetLetter}!</button>
+              </div>
+            `;
+            const timer = setInterval(() => {
+              qIdx = (qIdx + 1) % queue.length;
+              const screen = stage.querySelector('#radarScreen');
+              if (screen) screen.textContent = queue[qIdx];
+            }, 1200);
+            this.destroy = () => clearInterval(timer);
+
+            stage.querySelector('#btnRadarHit').onclick = () => {
+              attemptCount++;
+              if (queue[qIdx] === targetLetter) {
+                hits++; score += 50; correctCount++; sound.playSuccessTone(); updateScoreUI();
+                if (hits >= 2) {
+                  clearInterval(timer);
+                  setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                }
+              } else {
+                sound.playGentleRetryTone();
+              }
+            };
+          }
+        };
+      }
+
+      /* JUEGO 28: Lectura con Metrónomo */
+      if (gId === 28) {
+        const syls = pickRandom(['LA', 'ME', 'SI', 'TO', 'PA', 'LU'], 4);
+        let sIdx = 0;
+        return {
+          instruction: 'Lee cada sílaba cuando se ilumine al ritmo del compás.',
+          init() {
+            sound.speak(this.instruction);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="flex justify-center gap-3">
+                  ${syls.map((s, i) => `
+                    <div class="metro-card w-20 h-24 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center text-2xl font-black text-white" id="metro${i}">${s}</div>
+                  `).join('')}
+                </div>
+                <button id="btnStartMetro" class="px-6 py-3 bg-brand-500 text-white font-bold rounded-xl">⏱️ Comenzar Metrónomo</button>
+              </div>
+            `;
+            stage.querySelector('#btnStartMetro').onclick = () => {
+              stage.querySelector('#btnStartMetro').classList.add('hidden');
+              const timer = setInterval(() => {
+                if (sIdx >= syls.length) {
+                  clearInterval(timer);
+                  score += 100; correctCount += 4; updateScoreUI();
+                  setTimeout(() => finishGameSession({ score, correct: correctCount, attempts: 4, errors: specificErrors }), 1000);
+                  return;
+                }
+                stage.querySelectorAll('.metro-card').forEach(c => c.classList.remove('bg-brand-500', 'scale-110'));
+                const active = stage.querySelector(`#metro${sIdx}`);
+                if (active) { active.classList.add('bg-brand-500', 'scale-110'); sound.speak(syls[sIdx]); }
+                sIdx++;
+              }, 1100);
+              this.destroy = () => clearInterval(timer);
+            };
+          }
+        };
+      }
+
+      /* JUEGO 29: Sopa y Crucigrama Dinámico (Con Dificultad) */
+      if (gId === 29) {
+        const targetWord = getRandomItem(CONTENT_POOLS.crosswordWords);
+        const wordLen = targetWord.length;
+        const gridSize = currentDifficulty === 'facil' ? 3 : 4;
+        const lettersAlphabet = ['A','B','C','D','E','F','G','H','I','L','M','N','O','P','R','S','T','U'];
+
+        const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
+        const isHorizontal = currentDifficulty === 'facil' ? true : Math.random() > 0.5;
+        let startR = 0, startC = 0;
+
+        if (isHorizontal) {
+          startR = Math.floor(Math.random() * gridSize);
+          startC = Math.floor(Math.random() * (gridSize - wordLen + 1));
+          for (let i = 0; i < wordLen; i++) grid[startR][startC + i] = targetWord[i];
+        } else {
+          startR = Math.floor(Math.random() * (gridSize - wordLen + 1));
+          startC = Math.floor(Math.random() * gridSize);
+          for (let i = 0; i < wordLen; i++) grid[startR + i][startC] = targetWord[i];
+        }
+
+        for (let r = 0; r < gridSize; r++) {
+          for (let c = 0; c < gridSize; c++) {
+            if (!grid[r][c]) grid[r][c] = getRandomItem(lettersAlphabet);
+          }
+        }
+
+        let foundProgress = '';
+
+        return {
+          instruction: `Encuentra la palabra ${targetWord} en la rejilla. Toca sus letras en orden.`,
+          init() {
+            sound.speak(this.instruction);
+            setFeedback(`Busca la palabra "${targetWord}" tocando sus letras en orden.`);
+
+            stage.innerHTML = `
+              <div class="text-center space-y-5 max-w-sm w-full">
+                <div class="text-sm font-bold text-slate-300">
+                  Palabra: <span class="text-brand-400 font-black text-2xl tracking-widest">${targetWord}</span>
+                </div>
+                <div class="grid grid-cols-${gridSize} gap-2 bg-slate-900 p-4 rounded-3xl border border-slate-700">
+                  ${grid.flat().map(c => `
+                    <button class="sopa-cell h-14 bg-slate-800 hover:bg-slate-700 rounded-xl text-2xl font-black text-white shadow transition" data-char="${c}">
+                      ${c}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+
+            stage.querySelectorAll('.sopa-cell').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                const c = btn.dataset.char;
+                const expected = targetWord[foundProgress.length];
+                if (c === expected) {
+                  foundProgress += c;
+                  btn.classList.add('bg-emerald-600', 'pointer-events-none');
+                  sound.playSuccessTone();
+                  correctCount++;
+                  score += Math.round(100 / wordLen);
+                  updateScoreUI();
+                  if (foundProgress === targetWord) {
+                    setFeedback(`¡Encontraste la palabra ${targetWord}!`, true);
+                    sound.speak(targetWord);
+                    setTimeout(() => finishGameSession({ score: 100, correct: correctCount, attempts: attemptCount, errors: specificErrors }), 1000);
+                  }
+                } else {
+                  sound.playGentleRetryTone();
+                  setFeedback(`El siguiente sonido es /${expected.toLowerCase()}/.`, false);
+                }
+              };
+            });
+          }
+        };
+      }
+
+      /* JUEGO 30: El Desafío Maestro de las 10 Gemas */
+      if (gId === 30) {
+        const miniQuests = pickRandom(CONTENT_POOLS.masterQuests, 5);
+        return {
+          instruction: '¡Desafío final maestro! Responde a las preguntas rápidas para ganar la copa.',
+          init() { sound.speak(this.instruction); this.renderRound(); },
+          renderRound() {
+            if (round >= miniQuests.length) {
+              finishGameSession({ score: 100, correct: correctCount, attempts: attemptCount, errors: specificErrors });
+              return;
+            }
+            const quest = miniQuests[round];
+            setFeedback(quest.q);
+            stage.innerHTML = `
+              <div class="text-center space-y-6 max-w-md w-full">
+                <div class="text-5xl">👑</div>
+                <div class="text-xs text-slate-400 font-bold uppercase">Pregunta ${round + 1} de ${miniQuests.length}</div>
+                <div class="text-base font-bold text-white">${quest.q}</div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  ${shuffle(quest.opts).map(opt => `
+                    <button class="quest-btn py-4 bg-slate-700 hover:bg-brand-600 rounded-2xl text-lg font-black text-white shadow" data-val="${opt}">
+                      ${opt}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            `;
+            stage.querySelectorAll('.quest-btn').forEach(btn => {
+              btn.onclick = () => {
+                attemptCount++;
+                if (btn.dataset.val === quest.ans) {
+                  correctCount++; score += 20; sound.playSuccessTone(); updateScoreUI();
+                  round++; setTimeout(() => this.renderRound(), 1000);
+                } else {
+                  sound.playGentleRetryTone();
+                }
+              };
+            });
+          }
+        };
+      }
+
+      return {
+        instruction: 'Juego cargando...',
+        init() { stage.innerHTML = '<div>Cargando...</div>'; }
+      };
+    }
+
+    /* =====================================================================
+       7. CONFETI PROCEDURAL
+       ===================================================================== */
+    function triggerConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      canvas.classList.remove('hidden');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+      const particles = [];
+
+      for (let i = 0; i < 70; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 16,
+          size: Math.random() * 8 + 4,
+          color: ['#f43f5e', '#38bdf8', '#fbbf24', '#34d399', '#a855f7'][Math.floor(Math.random() * 5)],
+          life: 100
+        });
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = 0;
+        particles.forEach(p => {
+          if (p.life > 0) {
+            active++;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.3;
+            p.life--;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+          }
+        });
+        if (active > 0) requestAnimationFrame(frame);
+        else canvas.classList.add('hidden');
+      }
+      requestAnimationFrame(frame);
+    }
+
+    /* =====================================================================
+       8. MODAL DE TELEMETRÍA Y EXPORTACIÓN
+       ===================================================================== */
+    function openAnalyticsModal() {
+      const summary = analytics.getSummary();
+      document.getElementById('metricTotalSessions').textContent = summary.totalSessions;
+      document.getElementById('metricAvgAccuracy').textContent = `${summary.avgAccuracy}%`;
+      document.getElementById('metricTotalTime').textContent = `${summary.totalTimeMin}m`;
+      document.getElementById('metricTotalStars').textContent = `${summary.totalStars} ⭐`;
+      document.getElementById('sessionsCountLabel').textContent = `${summary.totalSessions} registradas`;
+
+      const pContainer = document.getElementById('pillarProgressBars');
+      pContainer.innerHTML = '';
+      const pNames = {
+        pilar1: '🎧 1. Auditivo & Rimas',
+        pilar2: '👁️ 2. Visual & b/d/p/q',
+        pilar3: '⚡ 3. Sonido ⇄ Letra',
+        pilar4: '🧱 4. Sílabas & Memoria',
+        pilar5: '🎯 5. Rastreo & Crucigramas'
+      };
+
+      Object.keys(pNames).forEach(pId => {
+        const data = summary.pillarAverages[pId] || { count: 0, accuracy: 0 };
+        const row = document.createElement('div');
+        row.className = 'space-y-1';
+        row.innerHTML = `
+          <div class="flex justify-between text-xs font-bold">
+            <span class="text-slate-300">${pNames[pId]} (${data.count} partidas)</span>
+            <span class="${data.accuracy >= 75 ? 'text-emerald-400' : data.accuracy >= 50 ? 'text-amber-400' : 'text-slate-400'}">${data.accuracy}%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+            <div class="bg-gradient-to-r from-brand-500 to-emerald-400 h-2 rounded-full" style="width: ${data.accuracy}%"></div>
+          </div>
+        `;
+        pContainer.appendChild(row);
+      });
+
+      const tbody = document.getElementById('sessionsTableBody');
+      tbody.innerHTML = '';
+      if (analytics.logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-slate-500">No hay sesiones guardadas todavía.</td></tr>';
+      } else {
+        analytics.logs.slice(0, 15).forEach(l => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-800/50';
+          tr.innerHTML = `
+            <td class="p-2 text-slate-400">${l.formattedDate || l.timestamp.slice(0,10)}</td>
+            <td class="p-2 font-bold text-white">${l.gameName}</td>
+            <td class="p-2 text-amber-400 capitalize">${l.difficulty || 'medio'}</td>
+            <td class="p-2 text-center">${l.correctAnswers}/${l.totalAttempts}</td>
+            <td class="p-2 font-bold ${l.accuracy >= 80 ? 'text-emerald-400' : 'text-amber-400'}">${l.accuracy}%</td>
+            <td class="p-2 text-slate-400">${l.durationSeconds}s</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      const insightsEl = document.getElementById('clinicalInsights');
+      if (analytics.logs.length >= 2) {
+        let msg = `<p class="mb-1"><strong>Telemetría:</strong> Se han registrado ${analytics.logs.length} sesiones.</p>`;
+        const p2 = summary.pillarAverages['pilar2'];
+        if (p2 && p2.count > 0 && p2.accuracy < 70) {
+          msg += `<p class="text-amber-300">⚠️ Confusión persistente en letras simétricas (b vs d). Utiliza el Tutorial del Pilar 2 (regla de la cama/pulgares) para fijar el apoyo propioceptivo.</p>`;
+        } else {
+          msg += `<p class="text-emerald-300">✅ Avance adecuado en discriminación visual.</p>`;
+        }
+        insightsEl.innerHTML = msg;
+      }
+
+      document.getElementById('analyticsModal').classList.remove('hidden');
+    }
+
+    function closeAnalyticsModal() {
+      document.getElementById('analyticsModal').classList.add('hidden');
+    }
+
+    function clearAnalyticsLog() {
+      if (confirm('¿Seguro que deseas reiniciar el registro de rendimiento y estrellas?')) {
+        analytics.clearAll();
+        openAnalyticsModal();
+        updateHeaderStats();
+        renderGamesGrid();
+      }
+    }
+
+    function exportDataCSV() {
+      if (analytics.logs.length === 0) {
+        alert('Aún no hay partidas jugadas para exportar.');
+        return;
+      }
+      const headers = ['ID_Sesion', 'Fecha_Hora', 'Juego', 'Pilar', 'Dificultad', 'Aciertos', 'Intentos', 'Precision_Porcentaje', 'Duracion_Segundos', 'Puntaje', 'Errores'];
+      const rows = analytics.logs.map(l => [
+        l.id,
+        `"${l.formattedDate || l.timestamp}"`,
+        `"${l.gameName}"`,
+        `"${l.pillarName}"`,
+        `"${l.difficulty || 'medio'}"`,
+        l.correctAnswers,
+        l.totalAttempts,
+        l.accuracy,
+        l.durationSeconds,
+        l.score,
+        `"${(l.specificErrors || []).join('; ')}"`
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `registro_rendimiento_lectura_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportDataJSON() {
+      if (analytics.logs.length === 0) {
+        alert('Aún no hay datos para exportar.');
+        return;
+      }
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(analytics.logs, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute('href', dataStr);
+      dlAnchor.setAttribute('download', `registro_telemetria_${new Date().toISOString().slice(0,10)}.json`);
+      dlAnchor.click();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initHub();
+    });
+  </script>
+</body>
+</html>

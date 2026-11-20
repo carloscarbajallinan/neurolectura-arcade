@@ -1,0 +1,12 @@
+﻿ID_Sesion,Fecha_Hora,Juego_ID,Juego,Pilar_Cognitivo,Aciertos,Intentos,Precision_Porcentaje,Duracion_Segundos,Puntaje,Errores_Detectados
+ses_test_001,11/11/2026 00:35,7,El Desafío Espejo (b vs d),Visual,8,8,100,24,120,
+ses_1794506467879,12/11/2026 13:01,1,Cazador de Sonidos Iniciales,Auditivo,5,5,100,28,100,
+ses_1794506492028,12/11/2026 13:01,2,El Eco de las Rimas,Auditivo,5,5,100,22,100,
+ses_1794506632025,12/11/2026 13:03,3,Contador de Golpes de Sílaba,Auditivo,5,5,100,106,100,
+ses_1794506664421,12/11/2026 13:04,4,¿Quién se Escapó? (Omisión),Auditivo,4,4,100,31,100,
+ses_1794506702395,12/11/2026 13:05,8,"El Cuarteto Rebelde (b, d, p, q)",Visual,10,10,100,19,100,
+ses_1794506715846,12/11/2026 13:05,9,"El Impostor Rotado (M/W, n/u)",Visual,4,4,100,12,100,
+ses_1794506729149,12/11/2026 13:05,10,Siluetas y Sombras de Letras,Visual,4,4,100,12,100,
+ses_1794506736161,12/11/2026 13:05,11,Laberinto de la Letra Fiel,Visual,7,7,100,6,105,
+ses_1794506754836,12/11/2026 13:05,12,Memorama de Letras Gemelas,Visual,4,9,44,18,100,
+ses_1794506774149,12/11/2026 13:06,13,La Tecla Parlante,Grafema-Fonema,8,8,100,18,120,
