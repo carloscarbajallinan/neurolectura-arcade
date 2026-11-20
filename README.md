@@ -1,7 +1,22 @@
 # 🚀 NeuroLectura Arcade 11
 ### Suite de 30 Microjuegos Multisensoriales y Telemetría Cognitiva para Entrenamiento Lector
 
-Diseñado especialmente para niños de **11 años** con diagnóstico o dificultades severas en decodificación de letras, dislexia del desarrollo, o procesamiento fonológico y visual.
+Diseñado especialmente para niños de **11 años** con dificultades severas en decodificación de letras, dislexia del desarrollo o dificultades en procesamiento fonológico y visual.
+
+[![Jugar Online](https://img.shields.io/badge/🎮%20Jugar%20Online-GitHub%20Pages-success?style=for-the-badge&logo=github)](https://carloscarbajallinan.github.io/neurolectura-arcade/)
+[![Código Abierto](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](https://github.com/carloscarbajallinan/neurolectura-arcade)
+
+---
+
+## 🌐 Juega Directamente en el Navegador (Sin Instalar Nada)
+
+👉 **[Haz clic aquí para Jugar NeuroLectura Arcade en Vivo](https://carloscarbajallinan.github.io/neurolectura-arcade/)**
+
+Puedes abrir este enlace en cualquier computadora, laptop, tablet o teléfono móvil.
+- Compatible con Chrome, Edge, Safari, Firefox y Brave.
+- Usa la síntesis de voz en español nativa del navegador (`Web Speech API`) y efectos sonoros (`Web Audio API`).
+- Guarda el progreso, estrellas y precisión en la memoria del navegador (`localStorage`).
+- Permite descargar el registro de rendimiento en **Excel (CSV)** e imprimir el reporte clínico.
 
 ---
 
